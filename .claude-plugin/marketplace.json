@@ -1,0 +1,14 @@
+{
+    "name": "hardfin",
+    "owner": { "name": "Hardfin", "url": "https://hardfin.com" },
+    "metadata": {
+        "description": "Hardfin's plugin for Claude Code and Codex."
+    },
+    "plugins": [
+        {
+            "name": "hardfin",
+            "source": "./",
+            "description": "Read and change Hardfin assets, customers, items and locations from an agent, through the Hardfin CLI and the Hardfin MCP server."
+        }
+    ]
+}

@@ -1,0 +1,66 @@
+# Copyright (c) 2026 - Present. Hardfin, Inc. All rights reserved.
+
+---
+name: Sync skills from the CLI
+
+# The skills ship in @hardfin/cli on npm, so a released CLI and its skills always match. This
+# copies the latest release's skills here and opens a pull request when they changed. A person
+# merges it.
+on:
+  schedule:
+    - cron: "17 13 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.14.0"
+
+      - name: Copy the released skills, and open a pull request if they changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(npm view @hardfin/cli version)
+          npm pack "@hardfin/cli@$VERSION" --pack-destination "$RUNNER_TEMP" > /dev/null
+          tar -xzf "$RUNNER_TEMP/hardfin-cli-$VERSION.tgz" -C "$RUNNER_TEMP"
+
+          rsync -a --delete "$RUNNER_TEMP/package/skills/" skills/
+
+          if git diff --quiet && [ -z "$(git ls-files --others --exclude-standard skills)" ]; then
+            exit 0
+          fi
+
+          # The plugin's version follows the CLI release its skills came from.
+          for manifest in plugin.json .claude-plugin/plugin.json; do
+            jq --arg version "$VERSION" '.version = $version' "$manifest" > "$manifest.next"
+            mv "$manifest.next" "$manifest"
+          done
+
+          BRANCH="sync/cli-$VERSION"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -C "$BRANCH"
+          git add skills plugin.json .claude-plugin/plugin.json
+          git commit -m "Take the skills from @hardfin/cli $VERSION"
+          git push --force origin "$BRANCH"
+
+          if [ -z "$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')" ]; then
+            gh pr create --base main --head "$BRANCH" \
+              --title "Take the skills from @hardfin/cli $VERSION" \
+              --body "Copies \`skills/\` from the published @hardfin/cli $VERSION and sets the plugin's version to match."
+          fi

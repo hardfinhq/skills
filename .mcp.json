@@ -1,0 +1,8 @@
+{
+    "mcpServers": {
+        "hardfin": {
+            "type": "http",
+            "url": "https://api.hardfin.com/mcp"
+        }
+    }
+}
