@@ -1,0 +1,37 @@
+# Copyright (c) 2026 - Present. Hardfin, Inc. All rights reserved.
+
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check release tag
+        run: python3 scripts/check_release.py --tag "$GITHUB_REF_NAME"
+      - name: Build release files
+        run: |
+          VERSION=$(python3 -c 'import json; print(json.load(open("hardfin-skills.json"))["version"])')
+          tar --sort=name --mtime='1970-01-01 00:00:00Z' --owner=0 --group=0 --numeric-owner -cf - hardfin-skills.json skills | gzip -n -9 > "hardfin-skills-$VERSION.tar.gz"
+          sha256sum "hardfin-skills-$VERSION.tar.gz" > "hardfin-skills-$VERSION.tar.gz.sha256"
+          cp release/cli-surface.json "cli-surface-$VERSION.json"
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(python3 -c 'import json; print(json.load(open("hardfin-skills.json"))["version"])')
+          gh release create "$GITHUB_REF_NAME" \
+            "hardfin-skills-$VERSION.tar.gz" \
+            "hardfin-skills-$VERSION.tar.gz.sha256" \
+            "cli-surface-$VERSION.json" \
+            --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
