@@ -11,12 +11,21 @@
     "extensions": {
         "com.openai": {
             "interface": {
-                "displayName": "Hardfin"
-            },
-            "defaultPrompt": [
-                "Use Hardfin to list the assets at a customer's sites.",
-                "Use Hardfin to find an asset by its serial number and show its ownership history."
-            ]
+                "displayName": "Hardfin",
+                "shortDescription": "Track and import your assets",
+                "longDescription": "Hardfin tracks hardware assets across sales, leasing, subscription and hardware-as-a-service programs. This plugin lets an agent read and change the assets, customers, items and locations in your Hardfin organization through the Hardfin MCP server, and import them from spreadsheets and CSV exports. It is for operations and finance teams at companies that sell, lease or rent equipment. It needs a Hardfin account, and the agent acts with the permissions of the person who signs in.",
+                "developerName": "Hardfin",
+                "category": "Business & Operations",
+                "websiteURL": "https://www.hardfin.com/",
+                "supportURL": "https://www.hardfin.com/contact",
+                "privacyPolicyURL": "https://www.hardfin.com/legal/privacy-policy",
+                "termsOfServiceURL": "https://www.hardfin.com/legal/terms-of-service",
+                "defaultPrompt": [
+                    "Use Hardfin to list the assets at a customer's sites.",
+                    "Use Hardfin to find an asset by its serial number and show its ownership history."
+                ],
+                "logo": "./assets/logo.png"
+            }
         }
     }
 }

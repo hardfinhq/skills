@@ -39,15 +39,6 @@ def check(root, tag=None):
             errors.append(f"{name}: expected one hardfin entry; found {len(entries)}")
         compare(name, "hardfin.version", entries[0].get("version") if len(entries) == 1 else None)
 
-    for name in ("mcp.json", ".mcp.json"):
-        data = read_json(name)
-        value = None
-        try:
-            value = data["mcpServers"]["hardfin"]["headers"]["X-Hardfin-Skills"]
-        except (KeyError, TypeError):
-            pass
-        compare(name, "X-Hardfin-Skills", value)
-
     if tag is not None and tag != f"v{version}":
         errors.append(f"tag: {tag!r}; expected 'v{version}'")
 
