@@ -28,6 +28,9 @@ The skills are authored here.
 
 ## Install
 
+In claude.ai and ChatGPT, the skills work through the Hardfin connector. The CLI is used
+where an agent can run it.
+
 | Tool | Install command | Update command |
 | --- | --- | --- |
 | Claude Code | `/plugin marketplace add hardfinhq/skills`, then `/plugin install hardfin@hardfin` | `claude plugin marketplace update hardfin`, then `claude plugin update hardfin@hardfin` |

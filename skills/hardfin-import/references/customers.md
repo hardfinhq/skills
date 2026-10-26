@@ -24,5 +24,5 @@ Load customers before locations. Read `hardfin-cli`'s `references/customers.md` 
   them. Something with no field is reported, not stuffed into another field; see `hardfin-cli`'s
   `references/customers.md`
 - A PO box is a billing address, never a site
-- Check `hardfin customer create --help` for the supplier and customer flags and the address fields before building
-  the table
+- Check `hardfin customer create --help`, or describe `customerCreateCustomer` on `hardfin_create` with the connector,
+  for the supplier and customer flags and the address fields before building the table

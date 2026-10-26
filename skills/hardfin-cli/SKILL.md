@@ -1,6 +1,6 @@
 ---
 name: hardfin-cli
-description: Read and change records in a Hardfin organization with the Hardfin CLI (`hardfin`) - assets, customers, items, locations, files, ownership and moves. Use when the person asks to look up, import, create, update, move, scrap or archive Hardfin data, to sign in to Hardfin, or to check what the CLI is connected to. Not for writing application code that calls the Hardfin API over HTTP; read https://docs.hardfin.com for that.
+description: Read and change records in a Hardfin organization with the Hardfin CLI (`hardfin`) or the Hardfin connector - assets, customers, items, locations, files, ownership and moves. Use when the person asks to look up, import, create, update, move, scrap or archive Hardfin data, to sign in to Hardfin, or to check what the CLI is connected to. Not for writing application code that calls the Hardfin API over HTTP; read https://docs.hardfin.com for that.
 ---
 
 # Hardfin CLI
@@ -20,6 +20,18 @@ flags, so check `--help` before relying on a flag this skill does not show.
 | Read or change customers           | `references/customers.md` |
 | Read or change locations           | `references/locations.md` |
 | Search, page or count records      | `references/querying.md`  |
+
+## Choose the route
+
+- If `hardfin status --offline --json` runs, use the CLI as the steps below describe
+- Otherwise, if the Hardfin connector's tools (`hardfin_read` and the others) are
+  available, use the connector as "Use the connector" below describes
+- If neither works and you can run commands, install the CLI as step 1 describes
+- If neither works and you cannot run commands, tell the person to add the Hardfin
+  connector at `https://api.hardfin.com/mcp` in their app and sign in, then stop
+
+Being able to run commands, such as in a code-execution sandbox, does not mean the CLI
+can reach Hardfin. Use `hardfin status` to test the connection after signing in.
 
 ## 1. Make sure the CLI is installed and current
 
@@ -195,3 +207,39 @@ that carries `event` instead of `code` is a notice, such as a newer CLI being pu
 | `update_unavailable`                                | Follow the `hardfin-upgrade` skill                                 |
 
 `hardfin agent-guide` lists every code.
+
+## Use the connector
+
+The app signs in with the person's own Hardfin account. It may grant read-only access,
+which offers only `hardfin_read`. A write then fails asking for write scope: tell the
+person the change needs write access, and sign in again only when they ask.
+
+| Tool | Does |
+| ---- | ---- |
+| `hardfin_read` | Every GET operation |
+| `hardfin_create` | Adds records |
+| `hardfin_update` | Changes records, including moves, scraps, assignments, cancellations and sending orders to a 3PL |
+| `hardfin_delete` | Removes records |
+
+Call a tool with no `operation` to list its operations, one line each: operationId,
+method, path and summary. Find the operation that matches the command in the steps or
+references. For a sale or scrap, find `assetCreateAssetOwnership` or `assetScrapAsset`
+by calling the tools with no `operation`; do not guess which tool holds it.
+
+Pass `operation` and `describe: true` to get its parameters and body schema without
+calling it. Every tool takes `operation`, `params`, `body`, `describe` and `fields`.
+Use `params` for path and query parameters with the API's own names, not CLI flag names;
+use `body` for the JSON request body. Describe before relying on an unknown field.
+Use `tokenGetToken` on `hardfin_read` to check who is signed in and which organization.
+
+Use `fields`, an array of field names, to keep asset answers small. Use dotted names
+for nested fields, such as `address.city`. On a list, `totalCount` is always kept;
+an unknown field is refused.
+
+A successful call answers `data`, plus `pagination` on a list and `notices` when present.
+A failure is a tool error whose text holds the HTTP `status` and the API's `errors`,
+which name the field. Use these rather than expecting CLI exit codes or stderr.
+
+The key and ID, read, change and failure rules in steps 4 to 7 still apply, with
+operations in place of commands. Use their tables for the rules; discover and describe
+operations in place of `--help`, and use the app's sign-in flow in place of `hardfin login`.
