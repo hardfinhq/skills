@@ -1,0 +1,15 @@
+{
+    "name": "hardfin",
+    "owner": { "name": "Hardfin", "url": "https://hardfin.com" },
+    "metadata": {
+        "description": "Read and change Hardfin assets, customers, items and locations from an agent through the Hardfin CLI and the Hardfin MCP server, and import them from spreadsheets."
+    },
+    "plugins": [
+        {
+            "name": "hardfin",
+            "source": "./",
+            "description": "Read and change Hardfin assets, customers, items and locations from an agent through the Hardfin CLI and the Hardfin MCP server, and import them from spreadsheets.",
+            "version": "1.0.0"
+        }
+    ]
+}

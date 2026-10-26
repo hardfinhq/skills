@@ -1,0 +1,22 @@
+{
+    "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+    "name": "hardfin",
+    "version": "1.0.0",
+    "description": "Read and change Hardfin assets, customers, items and locations from an agent through the Hardfin CLI and the Hardfin MCP server, and import them from spreadsheets.",
+    "author": { "name": "Hardfin", "url": "https://hardfin.com" },
+    "homepage": "https://developers.hardfin.com",
+    "repository": "https://github.com/hardfinhq/skills",
+    "license": "Apache-2.0",
+    "keywords": ["hardfin", "assets", "asset-management", "hardware", "leasing", "cli", "mcp"],
+    "extensions": {
+        "com.openai": {
+            "interface": {
+                "displayName": "Hardfin"
+            },
+            "defaultPrompt": [
+                "Use Hardfin to list the assets at a customer's sites.",
+                "Use Hardfin to find an asset by its serial number and show its ownership history."
+            ]
+        }
+    }
+}
