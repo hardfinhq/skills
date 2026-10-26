@@ -9,6 +9,8 @@ description: >
 
 # Update the Hardfin CLI and skills
 
+This skill applies to the CLI; the connector is always current and needs no update.
+
 Hardfin changes its API in ways an older CLI cannot follow, so update when told to:
 
 - `hardfin update --check --json` answers `isOutdated: true`

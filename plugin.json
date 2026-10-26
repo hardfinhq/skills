@@ -1,7 +1,7 @@
 {
     "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
     "name": "hardfin",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Read and change Hardfin assets, customers, items and locations from an agent through the Hardfin CLI and the Hardfin MCP server, and import them from spreadsheets.",
     "author": { "name": "Hardfin", "url": "https://hardfin.com" },
     "homepage": "https://developers.hardfin.com",

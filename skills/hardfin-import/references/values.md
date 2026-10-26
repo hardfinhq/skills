@@ -43,8 +43,9 @@
 
 ## Statuses
 
-- Map the company's words to the statuses `asset create --help` lists. Words that clearly mean working map to working
-  and words that clearly mean not working map to not working, as a judgment call
+- Map the company's words to the statuses `asset create --help` lists, or describe `assetCreateAsset` on
+  `hardfin_create` with the connector. Words that clearly mean working map to working and words that clearly mean
+  not working map to not working, as a judgment call
 - A word that could map to more than one Hardfin status, such as "awaiting parts", "at vendor" or "on hold", is a question:
   propose a mapping for every such word in one list
 - A status column that mixes condition and place, such as "On shelf" or "At depot", holds two facts: map the condition
