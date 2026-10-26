@@ -19,7 +19,7 @@ The skills are authored here.
 | `assets/` | The listing icon `plugin.json` names |
 | `.claude-plugin/` | The Claude Code plugin manifest and the marketplace also used by Codex |
 | `.cursor-plugin/` | The marketplace Cursor uses to import this repository |
-| `.mcp.json`, `mcp.json` | The Hardfin MCP server connection and release header for supported agents |
+| `.mcp.json`, `mcp.json` | The Hardfin MCP server connection for supported agents |
 | `hardfin-skills.json` | The release name and version |
 | `release/` | The CLI commands and flags this release was written against |
 | `scripts/` | The release checker |
@@ -73,16 +73,15 @@ To make a release, bump every version field in one commit:
 - `hardfin-skills.json`: `version`
 - `plugin.json` and `.claude-plugin/plugin.json`: `version`
 - `.claude-plugin/marketplace.json` and `.cursor-plugin/marketplace.json`: the `hardfin` entry's `version`
-- `mcp.json` and `.mcp.json`: `X-Hardfin-Skills`
 
 Merge the commit, then push the matching `vX.Y.Z` tag. The release workflow refuses a tag
 that does not match. Claude Code keeps a cached plugin until its manifest version changes.
 
 ## Markers
 
-The plugin's MCP configs send `X-Hardfin-Skills: <version>` to the Hardfin MCP server.
-`hardfin-skills.json` at the plugin root names the release. These let the CLI and the server
-tell which skills an agent has. Neither carries a credential.
+`hardfin-skills.json` at the plugin root names the release, so the CLI and an agent can tell
+which skills are installed. It carries no credential. The MCP configs send no headers, since
+OpenAI's plugin directory refuses an MCP server with headers.
 
 ## More
 

@@ -17,8 +17,6 @@ FIELDS = (
     (".claude-plugin/plugin.json", ("version",)),
     (".claude-plugin/marketplace.json", ("plugins", 0, "version")),
     (".cursor-plugin/marketplace.json", ("plugins", 0, "version")),
-    ("mcp.json", ("mcpServers", "hardfin", "headers", "X-Hardfin-Skills")),
-    (".mcp.json", ("mcpServers", "hardfin", "headers", "X-Hardfin-Skills")),
 )
 
 

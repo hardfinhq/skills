@@ -2,10 +2,7 @@
     "mcpServers": {
         "hardfin": {
             "type": "http",
-            "url": "https://api.hardfin.com/mcp",
-            "headers": {
-                "X-Hardfin-Skills": "1.0.0"
-            }
+            "url": "https://api.hardfin.com/mcp"
         }
     }
 }
