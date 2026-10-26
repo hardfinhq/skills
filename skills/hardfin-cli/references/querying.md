@@ -32,5 +32,5 @@ An archived item's assets still appear in `asset list`. Summing `assetCount` ove
 `location list` returns sites only. Zones come from `location zones list <siteKey>`,
 without a parent field.
 
-`--include-organization` limits a location list to the organization's own sites; the name
-suggests the opposite.
+`--for-organization` on `location list` adds the organization's own sites to a
+`--for-customer-ids` filter. On its own, it lists only the organization's own sites.

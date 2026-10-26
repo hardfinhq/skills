@@ -42,7 +42,7 @@ With a shell, follow steps 1 and 2 of `hardfin-cli`, and make sure the sign in c
 `hardfin status --offline --json` is `true`. Without a shell, use the Hardfin MCP tools.
 
 Run `hardfin login` yourself; it opens the user's browser and the user only approves there, so never ask them to run
-it. When the user's browser is on this machine, use `hardfin login`, not `--device`, even when you run in a sandbox.
+it. When the user's browser is on this machine, use `hardfin login` without `--no-browser`, even when you run in a sandbox.
 
 Count each kind you will import, reading `totalCount` and no records, such as `hardfin item list --limit 1`. Use
 `--is-transient all` for locations and `--scrapped all` for assets, as `hardfin-cli`'s `references/querying.md`
@@ -114,8 +114,8 @@ row, and appends each result to `hardfin-import/ledger.csv` (table, source row, 
 - Print a progress line every 50 rows
 
 Before each table's full run, load its first row alone and read it back with `get`. Compare every field sent with what
-came back: the API drops a field it does not know without an error. Fix the script before running the rest. After
-each table, fix what the failures file explains, ask about the rest in one message, and rerun.
+came back. Fix the script before running the rest. After each table, fix what the failures file explains, ask about
+the rest in one message, and rerun.
 
 If `hardfin item import --help` succeeds, the CLI imports a whole table at once: use it, with `--dry-run` first.
 
