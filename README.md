@@ -16,6 +16,7 @@ The skills are authored here.
 | `skills/hardfin-setup/` | Set up a new Hardfin organization with a company's equipment, customers and sites |
 | `skills/hardfin-upgrade/` | Update the Hardfin CLI and its skills |
 | `plugin.json` | The plugin in the Agent Plugins format, with OpenAI's display settings |
+| `assets/` | The listing icon `plugin.json` names |
 | `.claude-plugin/` | The Claude Code plugin manifest and the marketplace also used by Codex |
 | `.cursor-plugin/` | The marketplace Cursor uses to import this repository |
 | `.mcp.json`, `mcp.json` | The Hardfin MCP server connection and release header for supported agents |
