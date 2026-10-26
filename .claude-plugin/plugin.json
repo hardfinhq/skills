@@ -1,8 +1,8 @@
 {
     "name": "hardfin",
     "displayName": "Hardfin",
-    "version": "0.1.0",
-    "description": "Read and change Hardfin assets, customers, items and locations from an agent, through the Hardfin CLI and the Hardfin MCP server.",
+    "version": "1.0.0",
+    "description": "Read and change Hardfin assets, customers, items and locations from an agent through the Hardfin CLI and the Hardfin MCP server, and import them from spreadsheets.",
     "author": { "name": "Hardfin", "url": "https://hardfin.com" },
     "homepage": "https://developers.hardfin.com",
     "repository": "https://github.com/hardfinhq/skills",
