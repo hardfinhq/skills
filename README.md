@@ -80,7 +80,7 @@ that does not match. Claude Code keeps a cached plugin until its manifest versio
 ## Markers
 
 `hardfin-skills.json` at the plugin root names the release, so the CLI and an agent can tell
-which skills are installed. It carries no credential. The MCP configs send no headers, since
+which skills are installed. The marker carries no credential. The MCP configs send no headers, since
 OpenAI's plugin directory refuses an MCP server with headers.
 
 ## More
