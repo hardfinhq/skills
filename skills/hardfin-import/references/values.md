@@ -19,7 +19,8 @@
 
 - Normalize amounts to plain decimals as text, such as `1240.50`. Strip `$`, `USD`, thousands separators and spaces
 - A cost with no currency is in the organization's currency only when nothing suggests otherwise;
-  see `hardfin-cli`'s `references/assets.md`
+  see `hardfin-cli`'s `references/assets.md`. Read that currency as `defaultCurrency` from
+  `hardfin organization get --json`, or from `organizationGetOrganization` on `hardfin_read` with the connector
 - Compare each cost with the same product's other costs. A cost far out of line, with nothing on the row to explain
   it, may be in another currency, a total for several units, a depreciated value or a typo: ask, naming the rows and
   the readings, and propose the one the row supports
