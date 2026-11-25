@@ -29,5 +29,5 @@ Load items first. Read `hardfin-cli`'s `references/items.md` for the item data m
   propose the type the rows support and say why; see `hardfin-cli`'s `references/items.md`
 - Check a bulk item's unit of measure with the create's answer, not a read back;
   see `hardfin-cli`'s `references/items.md`
-- Check `hardfin item create --help`, or describe `itemCreateItem` on `hardfin_create` with the connector, for the type
+- Check `hardfin item create --help`, or read `create_item`'s input schema with the connector, for the type
   values and required fields before building the table
