@@ -1,5 +1,6 @@
 {
-  "apiVersion": "2026-10-24",
+  "cli": "0.5.0",
+  "apiVersion": "2026-11-24.R2",
   "exitCodes": {
     "0": "The command succeeded",
     "1": "The command failed",
@@ -196,7 +197,7 @@
         "update"
       ],
       "summary": "Install the newest version of this CLI, or name the command that does",
-      "description": "Asks npm for the newest version on this install's channel, which is latest for a release and dev for a preview. A plain npm global install is updated in place, and the skill hardfin init wrote in the working directory is brought up to date with it. Any other install, such as npx, Volta, pnpm, a project dependency, or a folder this account cannot write to, is left alone and the command that updates it is printed. It never runs sudo.",
+      "description": "Asks npm for the newest version on this install's channel, which is latest for a release and dev for a preview. A plain npm global install is updated in place, and the skills hardfin init wrote in the working directory are brought up to date with it, from the newest skills release the new version works with. Any other install, such as npx, Volta, pnpm, a project dependency, or a folder this account cannot write to, is left alone and the command that updates it is printed. It never runs sudo.",
       "runs": true,
       "endpoint": null,
       "arguments": [],
@@ -241,7 +242,7 @@
         "init"
       ],
       "summary": "Set up a project so coding agents can use Hardfin",
-      "description": "Writes the hardfin-cli skill, a Hardfin section in AGENTS.md, and the Hardfin MCP server for Claude Code, Cursor and VS Code. The server is the one Hardfin hosts, or with --local the one this CLI runs. Running it again updates what it wrote and leaves everything else alone.",
+      "description": "Downloads the Hardfin skills from github.com/hardfinhq/skills and writes every one, then a Hardfin section in AGENTS.md and the Hardfin MCP server for Claude Code, Cursor and VS Code. The skills are the newest release this CLI works with, >=1.0.0 <2.0.0, checked against the checksum published beside it. The server is the one Hardfin hosts, or with --local the one this CLI runs. Running it again updates what it wrote and leaves everything else alone. When GitHub cannot be reached, everything else is still written, and the output says how to install the skills by hand. Set GH_TOKEN to download from GitHub with a token.",
       "runs": true,
       "endpoint": null,
       "arguments": [
@@ -261,9 +262,17 @@
         },
         {
           "name": "skills-only",
-          "description": "Write only the hardfin-cli skill, and leave AGENTS.md and the MCP configs as they are",
+          "description": "Write only the skills, and leave AGENTS.md and the MCP configs as they are",
           "schema": {
             "type": "boolean"
+          }
+        },
+        {
+          "name": "skills-version",
+          "description": "Install this skills release, such as 1.0.0, in place of the newest. It must be in >=1.0.0 <2.0.0",
+          "valueName": "version",
+          "schema": {
+            "type": "string"
           }
         },
         {
@@ -295,8 +304,12 @@
           "command": "hardfin init --local"
         },
         {
-          "description": "Bring the skill up to date after updating the CLI",
+          "description": "Bring the skills up to date after updating the CLI",
           "command": "hardfin init --skills-only"
+        },
+        {
+          "description": "Install one skills release, for a setup that repeats exactly",
+          "command": "hardfin init --skills-version 1.0.0"
         }
       ]
     },
@@ -696,20 +709,6 @@
           "arguments": [],
           "flags": [
             {
-              "name": "allocated-indirect",
-              "description": "One unit's share of overhead, a cost component. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
-              "schema": {
-                "type": "null"
-              },
-              "sends": {
-                "body": [
-                  "allocatedIndirect"
-                ]
-              }
-            },
-            {
               "name": "allocated-indirect-value",
               "description": "One unit's share of overhead, a cost component: the exact value as a decimal string, which cannot be negative, sent with at most two decimal places, given with --allocated-indirect-iso-code",
               "valueName": "value",
@@ -748,20 +747,6 @@
               "together": [
                 "allocated-indirect-value"
               ]
-            },
-            {
-              "name": "bill-of-materials",
-              "description": "The parts cost of one unit, a cost component. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
-              "schema": {
-                "type": "null"
-              },
-              "sends": {
-                "body": [
-                  "billOfMaterials"
-                ]
-              }
             },
             {
               "name": "bill-of-materials-value",
@@ -857,20 +842,6 @@
               }
             },
             {
-              "name": "direct-labor",
-              "description": "The labor cost to build one unit, a cost component. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
-              "schema": {
-                "type": "null"
-              },
-              "sends": {
-                "body": [
-                  "directLabor"
-                ]
-              }
-            },
-            {
               "name": "direct-labor-value",
               "description": "The labor cost to build one unit, a cost component: the exact value as a decimal string, which cannot be negative, sent with at most two decimal places, given with --direct-labor-iso-code",
               "valueName": "value",
@@ -911,20 +882,6 @@
               ]
             },
             {
-              "name": "freight-inbound",
-              "description": "The shipping cost to receive one unit, a cost component. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
-              "schema": {
-                "type": "null"
-              },
-              "sends": {
-                "body": [
-                  "freightInbound"
-                ]
-              }
-            },
-            {
               "name": "freight-inbound-value",
               "description": "The shipping cost to receive one unit, a cost component: the exact value as a decimal string, which cannot be negative, sent with at most two decimal places, given with --freight-inbound-iso-code",
               "valueName": "value",
@@ -963,20 +920,6 @@
               "together": [
                 "freight-inbound-value"
               ]
-            },
-            {
-              "name": "freight-outbound",
-              "description": "The shipping cost to deploy one unit, a deployment cost component. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
-              "schema": {
-                "type": "null"
-              },
-              "sends": {
-                "body": [
-                  "freightOutbound"
-                ]
-              }
             },
             {
               "name": "freight-outbound-value",
@@ -1020,7 +963,7 @@
             },
             {
               "name": "functional-status",
-              "description": "The asset's starting functional status, FUNCTIONAL when absent, which cannot be SCRAPPED",
+              "description": "The asset's starting functional status, FUNCTIONAL when absent, which cannot be SCRAPPED because a scrapped asset is created first and then scrapped through its own endpoint",
               "valueName": "value",
               "clearable": true,
               "schema": {
@@ -1067,20 +1010,6 @@
               }
             },
             {
-              "name": "installation",
-              "description": "The cost to install one unit, a deployment cost component. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
-              "schema": {
-                "type": "null"
-              },
-              "sends": {
-                "body": [
-                  "installation"
-                ]
-              }
-            },
-            {
               "name": "installation-value",
               "description": "The cost to install one unit, a deployment cost component: the exact value as a decimal string, which cannot be negative, sent with at most two decimal places, given with --installation-iso-code",
               "valueName": "value",
@@ -1119,20 +1048,6 @@
               "together": [
                 "installation-value"
               ]
-            },
-            {
-              "name": "interest",
-              "description": "The financing cost of one unit, a cost component. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
-              "schema": {
-                "type": "null"
-              },
-              "sends": {
-                "body": [
-                  "interest"
-                ]
-              }
             },
             {
               "name": "interest-value",
@@ -1205,20 +1120,6 @@
               }
             },
             {
-              "name": "salvage-value",
-              "description": "The value one unit keeps at the end of its useful life, in the asset's cost currency, taken from the item when omitted and the item's accounting currency is the asset's. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
-              "schema": {
-                "type": "null"
-              },
-              "sends": {
-                "body": [
-                  "salvageValue"
-                ]
-              }
-            },
-            {
               "name": "salvage-value-value",
               "description": "The value one unit keeps at the end of its useful life, in the asset's cost currency, taken from the item when omitted and the item's accounting currency is the asset's: the exact value as a decimal string, which cannot be negative, sent with at most two decimal places, given with --salvage-value-iso-code",
               "valueName": "value",
@@ -1260,7 +1161,7 @@
             },
             {
               "name": "serial",
-              "description": "The asset's serial number, unique within your organization",
+              "description": "The asset's serial number, unique within your organization in any case",
               "valueName": "value",
               "required": true,
               "schema": {
@@ -1269,20 +1170,6 @@
               "sends": {
                 "body": [
                   "serial"
-                ]
-              }
-            },
-            {
-              "name": "simple-cost-basis",
-              "description": "A single cost for one unit, which cannot be sent together with the cost components, and whose cluster is taken from the item when every cost field is omitted and the item's accounting currency is the asset's. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
-              "schema": {
-                "type": "null"
-              },
-              "sends": {
-                "body": [
-                  "simpleCostBasis"
                 ]
               }
             },
@@ -1327,20 +1214,6 @@
               ]
             },
             {
-              "name": "tariffs",
-              "description": "The import duty paid on one unit, a cost component. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
-              "schema": {
-                "type": "null"
-              },
-              "sends": {
-                "body": [
-                  "tariffs"
-                ]
-              }
-            },
-            {
               "name": "tariffs-value",
               "description": "The import duty paid on one unit, a cost component: the exact value as a decimal string, which cannot be negative, sent with at most two decimal places, given with --tariffs-iso-code",
               "valueName": "value",
@@ -1379,20 +1252,6 @@
               "together": [
                 "tariffs-value"
               ]
-            },
-            {
-              "name": "tax",
-              "description": "The tax paid on one unit, a cost component. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
-              "schema": {
-                "type": "null"
-              },
-              "sends": {
-                "body": [
-                  "tax"
-                ]
-              }
             },
             {
               "name": "tax-value",
@@ -1866,7 +1725,7 @@
             },
             {
               "name": "serial",
-              "description": "The asset's new serial number, which cannot be empty",
+              "description": "The asset's new serial number, which cannot be empty and must be unique within your organization in any case",
               "valueName": "value",
               "schema": {
                 "type": "string"
@@ -1949,12 +1808,11 @@
               ],
               "flags": [
                 {
-                  "name": "allocated-indirect",
-                  "description": "One unit's share of overhead, a cost component, and sending it clears simpleCostBasis. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-allocated-indirect",
+                  "description": "Send null for allocatedIndirect, which clears one unit's share of overhead",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -2003,12 +1861,11 @@
                   ]
                 },
                 {
-                  "name": "bill-of-materials",
-                  "description": "The parts cost of one unit, a cost component, and sending it clears simpleCostBasis. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-bill-of-materials",
+                  "description": "Send null for billOfMaterials, which clears the parts cost of one unit",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -2096,12 +1953,11 @@
                   }
                 },
                 {
-                  "name": "direct-labor",
-                  "description": "The labor cost to build one unit, a cost component, and sending it clears simpleCostBasis. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-direct-labor",
+                  "description": "Send null for directLabor, which clears the labor cost to build one unit",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -2150,12 +2006,11 @@
                   ]
                 },
                 {
-                  "name": "freight-inbound",
-                  "description": "The shipping cost to receive one unit, a cost component, and sending it clears simpleCostBasis. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-freight-inbound",
+                  "description": "Send null for freightInbound, which clears the shipping cost to receive one unit",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -2204,12 +2059,11 @@
                   ]
                 },
                 {
-                  "name": "freight-outbound",
-                  "description": "The shipping cost to deploy one unit, a deployment cost component, and sending it clears simpleCostBasis. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-freight-outbound",
+                  "description": "Send null for freightOutbound, which clears the shipping cost to deploy one unit",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -2272,12 +2126,11 @@
                   }
                 },
                 {
-                  "name": "installation",
-                  "description": "The cost to install one unit, a deployment cost component, and sending it clears simpleCostBasis. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-installation",
+                  "description": "Send null for installation, which clears the cost to install one unit",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -2326,12 +2179,11 @@
                   ]
                 },
                 {
-                  "name": "interest",
-                  "description": "The financing cost of one unit, a cost component, and sending it clears simpleCostBasis. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-interest",
+                  "description": "Send null for interest, which clears the financing cost of one unit",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -2394,12 +2246,11 @@
                   }
                 },
                 {
-                  "name": "salvage-value",
-                  "description": "The value one unit keeps at the end of its useful life. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-salvage-value",
+                  "description": "Send null for salvageValue, which clears the value one unit keeps at the end of its useful life",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -2448,12 +2299,11 @@
                   ]
                 },
                 {
-                  "name": "simple-cost-basis",
-                  "description": "A single cost for one unit, which clears the cost components and cannot be sent together with them. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-simple-cost-basis",
+                  "description": "Send null for simpleCostBasis, which clears a single cost for one unit",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -2502,12 +2352,11 @@
                   ]
                 },
                 {
-                  "name": "tariffs",
-                  "description": "The import duty paid on one unit, a cost component, and sending it clears simpleCostBasis. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-tariffs",
+                  "description": "Send null for tariffs, which clears the import duty paid on one unit",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -2556,12 +2405,11 @@
                   ]
                 },
                 {
-                  "name": "tax",
-                  "description": "The tax paid on one unit, a cost component, and sending it clears simpleCostBasis. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-tax",
+                  "description": "Send null for tax, which clears the tax paid on one unit",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -3316,7 +3164,7 @@
               "flags": [
                 {
                   "name": "customer-id",
-                  "description": "The ID of the customer that takes ownership of the asset",
+                  "description": "The ID of the customer that takes ownership of the asset, which records a sale or transfer to that customer. An asset your organization still owns at a customer's site takes no owner and is located at that site instead",
                   "valueName": "uuid",
                   "required": true,
                   "schema": {
@@ -3340,20 +3188,6 @@
                   "sends": {
                     "body": [
                       "date"
-                    ]
-                  }
-                },
-                {
-                  "name": "sale-price",
-                  "description": "What the customer paid for the asset, which cannot be negative. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
-                  "schema": {
-                    "type": "null"
-                  },
-                  "sends": {
-                    "body": [
-                      "salePrice"
                     ]
                   }
                 },
@@ -3396,18 +3230,6 @@
                   "together": [
                     "sale-price-value"
                   ]
-                },
-                {
-                  "name": "unset",
-                  "description": "A field to clear, named as its flag is, repeatable",
-                  "valueName": "field",
-                  "repeatable": true,
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  }
                 },
                 {
                   "name": "input",
@@ -3588,12 +3410,11 @@
                   }
                 },
                 {
-                  "name": "sale-price",
-                  "description": "What the owner paid for the asset, which cannot be negative. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-sale-price",
+                  "description": "Send null for salePrice, which clears what the owner paid for the asset",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -3640,18 +3461,6 @@
                   "together": [
                     "sale-price-value"
                   ]
-                },
-                {
-                  "name": "unset",
-                  "description": "A field to clear, named as its flag is, repeatable",
-                  "valueName": "field",
-                  "repeatable": true,
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  }
                 },
                 {
                   "name": "input",
@@ -3767,20 +3576,6 @@
                   "sends": {
                     "body": [
                       "disposalDate"
-                    ]
-                  }
-                },
-                {
-                  "name": "disposal-price",
-                  "description": "What the scrapped asset was sold for, left out when it was not sold, and refused even as null for an asset a customer owns. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
-                  "schema": {
-                    "type": "null"
-                  },
-                  "sends": {
-                    "body": [
-                      "disposalPrice"
                     ]
                   }
                 },
@@ -4207,6 +4002,461 @@
       ]
     },
     {
+      "name": "bundle",
+      "path": [
+        "bundle"
+      ],
+      "summary": "Bundle commands",
+      "description": "Bundle commands",
+      "runs": false,
+      "endpoint": null,
+      "arguments": [],
+      "flags": [],
+      "examples": [],
+      "subcommands": [
+        {
+          "name": "list",
+          "path": [
+            "bundle",
+            "list"
+          ],
+          "summary": "Get bundles",
+          "description": "Get bundles",
+          "runs": true,
+          "endpoint": {
+            "method": "GET",
+            "path": "/bundle"
+          },
+          "arguments": [],
+          "flags": [
+            {
+              "name": "search",
+              "description": "Text to match against bundle names, in any case",
+              "valueName": "value",
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "query": "search"
+              }
+            },
+            {
+              "name": "page",
+              "description": "The page to return, starting at 1",
+              "valueName": "number",
+              "schema": {
+                "type": "integer"
+              },
+              "sends": {
+                "query": "page"
+              }
+            },
+            {
+              "name": "limit",
+              "description": "The number of records per page, from 1 to 100, and 100 when left out",
+              "valueName": "number",
+              "schema": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "sends": {
+                "query": "limit"
+              }
+            },
+            {
+              "name": "sort-by",
+              "description": "The field to sort by",
+              "valueName": "value",
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "name",
+                  "lastUpdatedAt"
+                ]
+              },
+              "sends": {
+                "query": "sortBy"
+              }
+            },
+            {
+              "name": "sort-order",
+              "description": "The sort direction, and ASC when left out",
+              "valueName": "value",
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "ASC",
+                  "DESC"
+                ]
+              },
+              "sends": {
+                "query": "sortOrder"
+              }
+            },
+            {
+              "name": "archived",
+              "description": "Whether to return unarchived records, archived records, or all of them, and false when left out",
+              "valueName": "value",
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "all",
+                  "false",
+                  "true"
+                ]
+              },
+              "sends": {
+                "query": "archived"
+              }
+            },
+            {
+              "name": "json",
+              "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "examples": [
+            {
+              "description": "Get bundles",
+              "command": "hardfin bundle list --limit 10"
+            }
+          ]
+        },
+        {
+          "name": "create",
+          "path": [
+            "bundle",
+            "create"
+          ],
+          "summary": "Create bundle",
+          "description": "Create bundle",
+          "runs": true,
+          "endpoint": {
+            "method": "POST",
+            "path": "/bundle"
+          },
+          "arguments": [],
+          "flags": [
+            {
+              "name": "description",
+              "description": "The bundle's description, or null for none",
+              "valueName": "value",
+              "clearable": true,
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "description"
+                ]
+              }
+            },
+            {
+              "name": "member",
+              "description": "The bundle's items in the order they are added, with at least one member",
+              "valueName": "defaultQty=,itemId=",
+              "repeatable": true,
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "sends": {
+                "body": [
+                  "members"
+                ]
+              },
+              "element": [
+                "defaultQty",
+                "itemId"
+              ],
+              "elementTypes": {
+                "defaultQty": [
+                  "integer"
+                ]
+              },
+              "elementUuids": [
+                "itemId"
+              ]
+            },
+            {
+              "name": "name",
+              "description": "The bundle's name, which cannot be empty and must be unique among the organization's bundles in any case",
+              "valueName": "value",
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "name"
+                ]
+              }
+            },
+            {
+              "name": "unset",
+              "description": "A field to clear, named as its flag is, repeatable",
+              "valueName": "field",
+              "repeatable": true,
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "name": "input",
+              "description": "A file holding the JSON request body, or - for standard input. A flag given as well replaces its field",
+              "valueName": "path",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "json",
+              "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "examples": [
+            {
+              "description": "Create bundle",
+              "command": "hardfin bundle create --member defaultQty=<value>,itemId=<value>"
+            }
+          ]
+        },
+        {
+          "name": "get",
+          "path": [
+            "bundle",
+            "get"
+          ],
+          "summary": "Get bundle",
+          "description": "Get bundle",
+          "runs": true,
+          "endpoint": {
+            "method": "GET",
+            "path": "/bundle/{bundleKey}"
+          },
+          "arguments": [
+            {
+              "name": "bundleKey",
+              "description": "The bundle's key",
+              "required": true
+            }
+          ],
+          "flags": [
+            {
+              "name": "json",
+              "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "examples": [
+            {
+              "description": "Get bundle",
+              "command": "hardfin bundle get bnd_7Hq2Lm9XcR4tWz8K"
+            }
+          ]
+        },
+        {
+          "name": "update",
+          "path": [
+            "bundle",
+            "update"
+          ],
+          "summary": "Update bundle",
+          "description": "Update bundle",
+          "runs": true,
+          "endpoint": {
+            "method": "PATCH",
+            "path": "/bundle/{bundleKey}"
+          },
+          "arguments": [
+            {
+              "name": "bundleKey",
+              "description": "The bundle's key",
+              "required": true
+            }
+          ],
+          "flags": [
+            {
+              "name": "description",
+              "description": "The bundle's new description, or null to clear it",
+              "valueName": "value",
+              "clearable": true,
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "description"
+                ]
+              }
+            },
+            {
+              "name": "is-archived",
+              "description": "Whether the bundle is archived, which cannot be null",
+              "negatable": true,
+              "schema": {
+                "type": "boolean"
+              },
+              "sends": {
+                "body": [
+                  "isArchived"
+                ]
+              }
+            },
+            {
+              "name": "name",
+              "description": "The bundle's new name, which cannot be empty and must be unique among the organization's bundles in any case",
+              "valueName": "value",
+              "clearable": true,
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "name"
+                ]
+              }
+            },
+            {
+              "name": "unset",
+              "description": "A field to clear, named as its flag is, repeatable",
+              "valueName": "field",
+              "repeatable": true,
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "name": "input",
+              "description": "A file holding the JSON request body, or - for standard input. A flag given as well replaces its field",
+              "valueName": "path",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "json",
+              "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "examples": [
+            {
+              "description": "Update bundle",
+              "command": "hardfin bundle update bnd_7Hq2Lm9XcR4tWz8K"
+            }
+          ]
+        },
+        {
+          "name": "members",
+          "path": [
+            "bundle",
+            "members"
+          ],
+          "summary": "Members commands",
+          "description": "Members commands",
+          "runs": false,
+          "endpoint": null,
+          "arguments": [],
+          "flags": [],
+          "examples": [],
+          "subcommands": [
+            {
+              "name": "update",
+              "path": [
+                "bundle",
+                "members",
+                "update"
+              ],
+              "summary": "Update bundle members",
+              "description": "Update bundle members",
+              "runs": true,
+              "endpoint": {
+                "method": "PATCH",
+                "path": "/bundle/{bundleKey}/members"
+              },
+              "arguments": [
+                {
+                  "name": "bundleKey",
+                  "description": "The bundle's key",
+                  "required": true
+                }
+              ],
+              "flags": [
+                {
+                  "name": "member",
+                  "description": "The bundle's whole new member list in the order the items are added, with at least one member",
+                  "valueName": "defaultQty=,itemId=",
+                  "repeatable": true,
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "sends": {
+                    "body": [
+                      "members"
+                    ]
+                  },
+                  "element": [
+                    "defaultQty",
+                    "itemId"
+                  ],
+                  "elementTypes": {
+                    "defaultQty": [
+                      "integer"
+                    ]
+                  },
+                  "elementUuids": [
+                    "itemId"
+                  ]
+                },
+                {
+                  "name": "input",
+                  "description": "A file holding the JSON request body, or - for standard input. A flag given as well replaces its field",
+                  "valueName": "path",
+                  "schema": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "name": "json",
+                  "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+                  "schema": {
+                    "type": "boolean"
+                  }
+                }
+              ],
+              "examples": [
+                {
+                  "description": "Update bundle members",
+                  "command": "hardfin bundle members update bnd_7Hq2Lm9XcR4tWz8K --member defaultQty=<value>,itemId=<value>"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "charge",
       "path": [
         "charge"
@@ -4589,12 +4839,11 @@
               }
             },
             {
-              "name": "total-price-override",
-              "description": "The amount to bill now, which is required when a FIXED charge is split, must be in the charge's currency, is from 0 to the charge's total price, and is refused when the charge is not split or is priced PER_UNIT. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
+              "name": "clear-total-price-override",
+              "description": "Send null for totalPriceOverride, which clears the amount to bill now",
+              "clears": true,
               "schema": {
-                "type": "null"
+                "type": "boolean"
               },
               "sends": {
                 "body": [
@@ -5296,6 +5545,647 @@
       ]
     },
     {
+      "name": "cost",
+      "path": [
+        "cost"
+      ],
+      "summary": "Cost commands",
+      "description": "Cost commands",
+      "runs": false,
+      "endpoint": null,
+      "arguments": [],
+      "flags": [],
+      "examples": [],
+      "subcommands": [
+        {
+          "name": "list",
+          "path": [
+            "cost",
+            "list"
+          ],
+          "summary": "Get costs",
+          "description": "Get costs",
+          "runs": true,
+          "endpoint": {
+            "method": "GET",
+            "path": "/cost"
+          },
+          "arguments": [],
+          "flags": [
+            {
+              "name": "page",
+              "description": "The page to return, starting at 1",
+              "valueName": "number",
+              "schema": {
+                "type": "integer"
+              },
+              "sends": {
+                "query": "page"
+              }
+            },
+            {
+              "name": "limit",
+              "description": "The number of records per page, from 1 to 100, and 100 when left out",
+              "valueName": "number",
+              "schema": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "sends": {
+                "query": "limit"
+              }
+            },
+            {
+              "name": "sort-by",
+              "description": "The field to sort by",
+              "valueName": "value",
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "costIncurredOn",
+                  "amount",
+                  "person",
+                  "project",
+                  "category"
+                ]
+              },
+              "sends": {
+                "query": "sortBy"
+              }
+            },
+            {
+              "name": "sort-order",
+              "description": "The sort direction, and ASC when left out",
+              "valueName": "value",
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "ASC",
+                  "DESC"
+                ]
+              },
+              "sends": {
+                "query": "sortOrder"
+              }
+            },
+            {
+              "name": "search",
+              "description": "Text to find, in any case, in the cost's description, category or amount, its person's first and last name, or its project's name. A person missing either name is not matched by name",
+              "valueName": "value",
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "query": "search"
+              }
+            },
+            {
+              "name": "project-ids",
+              "description": "The IDs of the projects whose costs to list",
+              "valueName": "uuid",
+              "repeatable": true,
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "sends": {
+                "query": "projectIds"
+              }
+            },
+            {
+              "name": "without-project",
+              "description": "Whether to list costs with no project, alongside any projectIds",
+              "schema": {
+                "type": "boolean"
+              },
+              "sends": {
+                "query": "withoutProject"
+              }
+            },
+            {
+              "name": "start-date",
+              "description": "A day, and only costs incurred on or after it are listed",
+              "valueName": "value",
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "query": "startDate"
+              }
+            },
+            {
+              "name": "end-date",
+              "description": "A day, and only costs incurred on or before it are listed",
+              "valueName": "value",
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "query": "endDate"
+              }
+            },
+            {
+              "name": "person-ids",
+              "description": "The IDs of the people whose costs to list",
+              "valueName": "uuid",
+              "repeatable": true,
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "sends": {
+                "query": "personIds"
+              }
+            },
+            {
+              "name": "without-person",
+              "description": "Whether to list costs with no person, alongside any personIds",
+              "schema": {
+                "type": "boolean"
+              },
+              "sends": {
+                "query": "withoutPerson"
+              }
+            },
+            {
+              "name": "categories",
+              "description": "The categories whose costs to list, matched exactly",
+              "valueName": "value",
+              "repeatable": true,
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "sends": {
+                "query": "categories"
+              }
+            },
+            {
+              "name": "without-category",
+              "description": "Whether to list costs with no category, alongside any categories",
+              "schema": {
+                "type": "boolean"
+              },
+              "sends": {
+                "query": "withoutCategory"
+              }
+            },
+            {
+              "name": "json",
+              "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "examples": [
+            {
+              "description": "Get costs",
+              "command": "hardfin cost list --limit 10"
+            }
+          ]
+        },
+        {
+          "name": "create",
+          "path": [
+            "cost",
+            "create"
+          ],
+          "summary": "Create cost",
+          "description": "Create cost",
+          "runs": true,
+          "endpoint": {
+            "method": "POST",
+            "path": "/cost"
+          },
+          "arguments": [],
+          "flags": [
+            {
+              "name": "amount-value",
+              "description": "What the cost came to: the exact value as a decimal string, which cannot be negative, sent with at most two decimal places, given with --amount-iso-code",
+              "valueName": "value",
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "amount",
+                  "amount"
+                ]
+              },
+              "together": [
+                "amount-iso-code"
+              ]
+            },
+            {
+              "name": "amount-iso-code",
+              "description": "What the cost came to: the value's ISO 4217 currency code, given with --amount-value",
+              "valueName": "value",
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "CAD",
+                  "EUR",
+                  "GBP",
+                  "USD"
+                ]
+              },
+              "sends": {
+                "body": [
+                  "amount",
+                  "isoCode"
+                ]
+              },
+              "together": [
+                "amount-value"
+              ]
+            },
+            {
+              "name": "category",
+              "description": "The kind of cost, at most 150 characters, or null for none",
+              "valueName": "value",
+              "clearable": true,
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "category"
+                ]
+              }
+            },
+            {
+              "name": "cost-incurred-on",
+              "description": "The day the cost was incurred, which can be no later than tomorrow",
+              "valueName": "value",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "costIncurredOn"
+                ]
+              }
+            },
+            {
+              "name": "description",
+              "description": "What the cost was for, at most 2000 characters, or null for none",
+              "valueName": "value",
+              "clearable": true,
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "description"
+                ]
+              }
+            },
+            {
+              "name": "person-id",
+              "description": "The ID of the person who incurred the cost, or null for none",
+              "valueName": "uuid",
+              "clearable": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sends": {
+                "body": [
+                  "personId"
+                ]
+              }
+            },
+            {
+              "name": "project-id",
+              "description": "The ID of the project the cost was for, or null for none",
+              "valueName": "uuid",
+              "clearable": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sends": {
+                "body": [
+                  "projectId"
+                ]
+              }
+            },
+            {
+              "name": "shipment-id",
+              "description": "The ID of the shipment the cost was for, or null for none. A shipment can have only one cost",
+              "valueName": "uuid",
+              "clearable": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sends": {
+                "body": [
+                  "shipmentId"
+                ]
+              }
+            },
+            {
+              "name": "unset",
+              "description": "A field to clear, named as its flag is, repeatable",
+              "valueName": "field",
+              "repeatable": true,
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "name": "input",
+              "description": "A file holding the JSON request body, or - for standard input. A flag given as well replaces its field",
+              "valueName": "path",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "json",
+              "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "examples": [
+            {
+              "description": "Create cost",
+              "command": "hardfin cost create --cost-incurred-on <value>"
+            }
+          ]
+        },
+        {
+          "name": "get",
+          "path": [
+            "cost",
+            "get"
+          ],
+          "summary": "Get cost",
+          "description": "Get cost",
+          "runs": true,
+          "endpoint": {
+            "method": "GET",
+            "path": "/cost/{costKey}"
+          },
+          "arguments": [
+            {
+              "name": "costKey",
+              "description": "The cost's key",
+              "required": true
+            }
+          ],
+          "flags": [
+            {
+              "name": "json",
+              "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "examples": [
+            {
+              "description": "Get cost",
+              "command": "hardfin cost get cost_7hn2qx5wzk9mbt4d"
+            }
+          ]
+        },
+        {
+          "name": "update",
+          "path": [
+            "cost",
+            "update"
+          ],
+          "summary": "Update cost",
+          "description": "Update cost",
+          "runs": true,
+          "endpoint": {
+            "method": "PATCH",
+            "path": "/cost/{costKey}"
+          },
+          "arguments": [
+            {
+              "name": "costKey",
+              "description": "The cost's key",
+              "required": true
+            }
+          ],
+          "flags": [
+            {
+              "name": "clear-cost",
+              "description": "Send null for amount, which clears what the cost came to",
+              "clears": true,
+              "schema": {
+                "type": "boolean"
+              },
+              "sends": {
+                "body": [
+                  "amount"
+                ]
+              }
+            },
+            {
+              "name": "amount-value",
+              "description": "What the cost came to: the exact value as a decimal string, which cannot be negative, sent with at most two decimal places, given with --amount-iso-code",
+              "valueName": "value",
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "amount",
+                  "amount"
+                ]
+              },
+              "together": [
+                "amount-iso-code"
+              ]
+            },
+            {
+              "name": "amount-iso-code",
+              "description": "What the cost came to: the value's ISO 4217 currency code, given with --amount-value",
+              "valueName": "value",
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "CAD",
+                  "EUR",
+                  "GBP",
+                  "USD"
+                ]
+              },
+              "sends": {
+                "body": [
+                  "amount",
+                  "isoCode"
+                ]
+              },
+              "together": [
+                "amount-value"
+              ]
+            },
+            {
+              "name": "category",
+              "description": "The kind of cost, at most 150 characters, or null to clear it",
+              "valueName": "value",
+              "clearable": true,
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "category"
+                ]
+              }
+            },
+            {
+              "name": "cost-incurred-on",
+              "description": "The day the cost was incurred, which cannot be null and can be no later than tomorrow",
+              "valueName": "value",
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "costIncurredOn"
+                ]
+              }
+            },
+            {
+              "name": "description",
+              "description": "What the cost was for, at most 2000 characters, or null to clear it",
+              "valueName": "value",
+              "clearable": true,
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "description"
+                ]
+              }
+            },
+            {
+              "name": "person-id",
+              "description": "The ID of the person who incurred the cost, or null to detach them",
+              "valueName": "uuid",
+              "clearable": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sends": {
+                "body": [
+                  "personId"
+                ]
+              }
+            },
+            {
+              "name": "project-id",
+              "description": "The ID of the project the cost was for, or null to detach it",
+              "valueName": "uuid",
+              "clearable": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sends": {
+                "body": [
+                  "projectId"
+                ]
+              }
+            },
+            {
+              "name": "unset",
+              "description": "A field to clear, named as its flag is, repeatable",
+              "valueName": "field",
+              "repeatable": true,
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "name": "input",
+              "description": "A file holding the JSON request body, or - for standard input. A flag given as well replaces its field",
+              "valueName": "path",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "json",
+              "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "examples": [
+            {
+              "description": "Update cost",
+              "command": "hardfin cost update cost_7hn2qx5wzk9mbt4d"
+            }
+          ]
+        },
+        {
+          "name": "delete",
+          "path": [
+            "cost",
+            "delete"
+          ],
+          "summary": "Delete cost",
+          "description": "Delete cost",
+          "runs": true,
+          "endpoint": {
+            "method": "DELETE",
+            "path": "/cost/{costKey}"
+          },
+          "arguments": [
+            {
+              "name": "costKey",
+              "description": "The cost's key",
+              "required": true
+            }
+          ],
+          "flags": [
+            {
+              "name": "json",
+              "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "examples": [
+            {
+              "description": "Delete cost",
+              "command": "hardfin cost delete cost_7hn2qx5wzk9mbt4d"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "customer",
       "path": [
         "customer"
@@ -5491,20 +6381,6 @@
               }
             },
             {
-              "name": "billing-contact",
-              "description": "The person who receives the customer's invoices. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
-              "schema": {
-                "type": "null"
-              },
-              "sends": {
-                "body": [
-                  "billingContact"
-                ]
-              }
-            },
-            {
               "name": "billing-contact-email",
               "description": "The billing contact's email address",
               "valueName": "value",
@@ -5619,7 +6495,7 @@
             },
             {
               "name": "name",
-              "description": "The customer's display name",
+              "description": "The customer's display name, unique within your organization in any case",
               "valueName": "value",
               "required": true,
               "schema": {
@@ -5738,12 +6614,11 @@
               }
             },
             {
-              "name": "billing-contact",
-              "description": "The person who receives the customer's invoices. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
+              "name": "clear-billing-contact",
+              "description": "Send null for billingContact, which clears the person who receives the customer's invoices",
+              "clears": true,
               "schema": {
-                "type": "null"
+                "type": "boolean"
               },
               "sends": {
                 "body": [
@@ -5882,7 +6757,7 @@
             },
             {
               "name": "name",
-              "description": "The customer's display name",
+              "description": "The customer's display name, unique within your organization in any case",
               "valueName": "value",
               "schema": {
                 "type": "string"
@@ -6423,21 +7298,6 @@
               }
             },
             {
-              "name": "return-order-transport-reference-details",
-              "description": "The carrier the items are returned with and its transport reference. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
-              "schema": {
-                "type": "null"
-              },
-              "sends": {
-                "body": [
-                  "returnOrder",
-                  "transportReferenceDetails"
-                ]
-              }
-            },
-            {
               "name": "return-order-transport-reference-details-carrier",
               "description": "The carrier, or null when none is named",
               "valueName": "value",
@@ -6830,6 +7690,126 @@
       ]
     },
     {
+      "name": "feedback",
+      "path": [
+        "feedback"
+      ],
+      "summary": "Tell Hardfin about an error or result that was confusing or wrong",
+      "description": "Tell Hardfin about an error or result that was confusing or wrong. Unless given, --client-name is this CLI and its version, and --request-id is the request ID of the last command that reached the API. Name the operationId with --operation and what you expected with --expected",
+      "runs": true,
+      "endpoint": {
+        "method": "POST",
+        "path": "/feedback",
+        "isReadScoped": true
+      },
+      "arguments": [],
+      "flags": [
+        {
+          "name": "client-name",
+          "description": "The program that sent the feedback and its version, at most 200 characters, or null for none",
+          "valueName": "value",
+          "clearable": true,
+          "schema": {
+            "type": "string"
+          },
+          "sends": {
+            "body": [
+              "clientName"
+            ]
+          }
+        },
+        {
+          "name": "expected",
+          "description": "What the caller expected to happen, at most 4000 characters, or null for none",
+          "valueName": "value",
+          "clearable": true,
+          "schema": {
+            "type": "string"
+          },
+          "sends": {
+            "body": [
+              "expected"
+            ]
+          }
+        },
+        {
+          "name": "message",
+          "description": "What went wrong or could be better, at most 4000 characters",
+          "valueName": "value",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "sends": {
+            "body": [
+              "message"
+            ]
+          }
+        },
+        {
+          "name": "operation",
+          "description": "The operationId the caller was using, at most 200 characters, or null for none",
+          "valueName": "value",
+          "clearable": true,
+          "schema": {
+            "type": "string"
+          },
+          "sends": {
+            "body": [
+              "operation"
+            ]
+          }
+        },
+        {
+          "name": "request-id",
+          "description": "The requestId of the response the feedback is about, at most 200 characters, or null for none",
+          "valueName": "value",
+          "clearable": true,
+          "schema": {
+            "type": "string"
+          },
+          "sends": {
+            "body": [
+              "requestId"
+            ]
+          }
+        },
+        {
+          "name": "unset",
+          "description": "A field to clear, named as its flag is, repeatable",
+          "valueName": "field",
+          "repeatable": true,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "name": "input",
+          "description": "A file holding the JSON request body, or - for standard input. A flag given as well replaces its field",
+          "valueName": "path",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "json",
+          "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+          "schema": {
+            "type": "boolean"
+          }
+        }
+      ],
+      "examples": [
+        {
+          "description": "Tell Hardfin about an error or result that was confusing or wrong",
+          "command": "hardfin feedback --message <value>"
+        }
+      ]
+    },
+    {
       "name": "file",
       "path": [
         "file"
@@ -6859,15 +7839,20 @@
           "flags": [
             {
               "name": "file-type",
-              "description": "The kind of file uploaded, ASSET_FILE for an asset, PURCHASE_ORDER_FILE for a purchase order or RETURN_ORDER_FILE for a return order, the only kinds the API uploads",
+              "description": "The kind of file uploaded, ASSET_FILE for an asset, PROJECT_FILE for a project, TICKET_FILE for a ticket, PURCHASE_ORDER_FILE for a purchase order, RETURN_ORDER_FILE for a return order, FULFILLMENT_ORDER_FILE for a fulfillment order, LOGO for the organization's full logo or ICON for its square icon. A LOGO or an ICON replaces the organization's current one",
               "valueName": "value",
               "required": true,
               "schema": {
                 "type": "string",
                 "enum": [
                   "ASSET_FILE",
+                  "FULFILLMENT_ORDER_FILE",
+                  "ICON",
+                  "LOGO",
+                  "PROJECT_FILE",
                   "PURCHASE_ORDER_FILE",
-                  "RETURN_ORDER_FILE"
+                  "RETURN_ORDER_FILE",
+                  "TICKET_FILE"
                 ]
               },
               "sends": {
@@ -6878,9 +7863,8 @@
             },
             {
               "name": "for-entity",
-              "description": "The ID of the asset, purchase order or return order the file is attached to, which fileType names the kind of",
+              "description": "The ID of the asset, project, ticket, purchase order, return order or fulfillment order the file is attached to, which fileType names the kind of. It is required for those kinds and refused for a LOGO or an ICON",
               "valueName": "uuid",
-              "required": true,
               "schema": {
                 "type": "string",
                 "format": "uuid"
@@ -6893,7 +7877,7 @@
             },
             {
               "name": "is-public",
-              "description": "Whether any organization's API key may download the file, sent as true or false in any case, and false when left out",
+              "description": "Whether any organization's API key may download the file, sent as true or false in any case, and false when left out. A LOGO or an ICON is always public",
               "schema": {
                 "type": "boolean"
               },
@@ -6922,7 +7906,7 @@
           "examples": [
             {
               "description": "Upload file",
-              "command": "hardfin file create --file-type <value> --for-entity <uuid> --file photo.jpg"
+              "command": "hardfin file create --file-type <value> --file photo.jpg"
             }
           ]
         },
@@ -10055,12 +11039,11 @@
               ],
               "flags": [
                 {
-                  "name": "allocated-indirect",
-                  "description": "One unit's share of overhead, a cost component, and sending it clears simpleCostBasis. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-allocated-indirect",
+                  "description": "Send null for allocatedIndirect, which clears one unit's share of overhead",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -10109,12 +11092,11 @@
                   ]
                 },
                 {
-                  "name": "bill-of-materials",
-                  "description": "The parts cost of one unit, a cost component, and sending it clears simpleCostBasis. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-bill-of-materials",
+                  "description": "Send null for billOfMaterials, which clears the parts cost of one unit",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -10202,12 +11184,11 @@
                   }
                 },
                 {
-                  "name": "direct-labor",
-                  "description": "The labor cost to build one unit, a cost component, and sending it clears simpleCostBasis. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-direct-labor",
+                  "description": "Send null for directLabor, which clears the labor cost to build one unit",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -10256,12 +11237,11 @@
                   ]
                 },
                 {
-                  "name": "freight-inbound",
-                  "description": "The shipping cost to receive one unit, a cost component, and sending it clears simpleCostBasis. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-freight-inbound",
+                  "description": "Send null for freightInbound, which clears the shipping cost to receive one unit",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -10310,12 +11290,11 @@
                   ]
                 },
                 {
-                  "name": "freight-outbound",
-                  "description": "The shipping cost to deploy one unit, a deployment cost component, and sending it clears simpleCostBasis. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-freight-outbound",
+                  "description": "Send null for freightOutbound, which clears the shipping cost to deploy one unit",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -10364,12 +11343,11 @@
                   ]
                 },
                 {
-                  "name": "installation",
-                  "description": "The cost to install one unit, a deployment cost component, and sending it clears simpleCostBasis. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-installation",
+                  "description": "Send null for installation, which clears the cost to install one unit",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -10418,12 +11396,11 @@
                   ]
                 },
                 {
-                  "name": "interest",
-                  "description": "The financing cost of one unit, a cost component, and sending it clears simpleCostBasis. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-interest",
+                  "description": "Send null for interest, which clears the financing cost of one unit",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -10472,12 +11449,11 @@
                   ]
                 },
                 {
-                  "name": "salvage-value",
-                  "description": "The value one unit keeps at the end of its useful life. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-salvage-value",
+                  "description": "Send null for salvageValue, which clears the value one unit keeps at the end of its useful life",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -10526,12 +11502,11 @@
                   ]
                 },
                 {
-                  "name": "simple-cost-basis",
-                  "description": "A single cost for one unit, which clears the cost components and cannot be sent together with them. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-simple-cost-basis",
+                  "description": "Send null for simpleCostBasis, which clears a single cost for one unit",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -10580,12 +11555,11 @@
                   ]
                 },
                 {
-                  "name": "tariffs",
-                  "description": "The import duty paid on one unit, a cost component, and sending it clears simpleCostBasis. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-tariffs",
+                  "description": "Send null for tariffs, which clears the import duty paid on one unit",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -10634,12 +11608,11 @@
                   ]
                 },
                 {
-                  "name": "tax",
-                  "description": "The tax paid on one unit, a cost component, and sending it clears simpleCostBasis. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-tax",
+                  "description": "Send null for tax, which clears the tax paid on one unit",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -11192,20 +12165,6 @@
           "arguments": [],
           "flags": [
             {
-              "name": "address",
-              "description": "The site's structured address, which a zone refuses. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
-              "schema": {
-                "type": "null"
-              },
-              "sends": {
-                "body": [
-                  "address"
-                ]
-              }
-            },
-            {
               "name": "address-line1",
               "description": "The first line of the street address",
               "valueName": "value",
@@ -11312,7 +12271,7 @@
             },
             {
               "name": "consignee",
-              "description": "The ID of the customer a zone is designated for, such as for reservations, provisioning or a 3PL, which a site refuses",
+              "description": "The ID of the customer a 3PL designates the zone for, so the 3PL prepares or provisions the zone's inventory for that consignee, and a site refuses it. A consignee does not change the zone's customer, which the zone takes from its parent site",
               "valueName": "uuid",
               "clearable": true,
               "schema": {
@@ -11327,7 +12286,7 @@
             },
             {
               "name": "customer-id",
-              "description": "The ID of the customer to assign a site to, or null for your organization's own site, which a zone refuses",
+              "description": "The ID of the customer to assign a site to, or null for your organization's own site. A zone refuses it, because a zone takes its parent site's customer. A zone's consignee is a separate field and does not change the zone's customer",
               "valueName": "uuid",
               "clearable": true,
               "schema": {
@@ -11534,12 +12493,11 @@
           ],
           "flags": [
             {
-              "name": "address",
-              "description": "The site's structured address, which a zone refuses. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
+              "name": "clear-address",
+              "description": "Send null for address, which clears the site's structured address",
+              "clears": true,
               "schema": {
-                "type": "null"
+                "type": "boolean"
               },
               "sends": {
                 "body": [
@@ -11654,7 +12612,7 @@
             },
             {
               "name": "consignee",
-              "description": "The ID of the customer a zone is designated for, such as for reservations, provisioning or a 3PL, which a site refuses",
+              "description": "The ID of the customer a 3PL designates the zone for, so the 3PL prepares or provisions the zone's inventory for that consignee, and a site refuses it. A consignee does not change the zone's customer, which the zone takes from its parent site",
               "valueName": "uuid",
               "clearable": true,
               "schema": {
@@ -11669,7 +12627,7 @@
             },
             {
               "name": "customer-id",
-              "description": "The ID of the customer to assign a site to, or null for your organization's own site, which a zone refuses",
+              "description": "The ID of the customer to assign a site to, or null for your organization's own site. A zone refuses it, because a zone takes its parent site's customer. A zone's consignee is a separate field and does not change the zone's customer",
               "valueName": "uuid",
               "clearable": true,
               "schema": {
@@ -11998,7 +12956,7 @@
               "arguments": [
                 {
                   "name": "locationKey",
-                  "description": "The key of the site whose zones to list",
+                  "description": "The key of the site whose zones to list. The location list returns sites only, so a site's zones are listed here, and a zone in this list names no parent because its parent is this site",
                   "required": true
                 }
               ],
@@ -12240,6 +13198,1310 @@
             {
               "description": "Delete note",
               "command": "hardfin note delete note_3kq8wz2mxv7pcr4t"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "organization",
+      "path": [
+        "organization"
+      ],
+      "summary": "Organization commands",
+      "description": "Organization commands",
+      "runs": false,
+      "endpoint": null,
+      "arguments": [],
+      "flags": [],
+      "examples": [],
+      "subcommands": [
+        {
+          "name": "get",
+          "path": [
+            "organization",
+            "get"
+          ],
+          "summary": "Get organization",
+          "description": "Get organization",
+          "runs": true,
+          "endpoint": {
+            "method": "GET",
+            "path": "/organization"
+          },
+          "arguments": [],
+          "flags": [
+            {
+              "name": "json",
+              "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "examples": [
+            {
+              "description": "Get organization",
+              "command": "hardfin organization get"
+            }
+          ]
+        },
+        {
+          "name": "update",
+          "path": [
+            "organization",
+            "update"
+          ],
+          "summary": "Patch organization",
+          "description": "Patch organization",
+          "runs": true,
+          "endpoint": {
+            "method": "PATCH",
+            "path": "/organization"
+          },
+          "arguments": [],
+          "flags": [
+            {
+              "name": "asset-marker",
+              "description": "assetMarker",
+              "valueName": "value",
+              "clearable": true,
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "assetMarker"
+                ]
+              }
+            },
+            {
+              "name": "billing-address",
+              "description": "The default bill-from address used for new invoices",
+              "valueName": "value",
+              "clearable": true,
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "billingAddress"
+                ]
+              }
+            },
+            {
+              "name": "default-currency",
+              "description": "The organization's invoicing default currency. It cannot be cleared",
+              "valueName": "value",
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "CAD",
+                  "EUR",
+                  "GBP",
+                  "USD"
+                ]
+              },
+              "sends": {
+                "body": [
+                  "defaultCurrency"
+                ]
+              }
+            },
+            {
+              "name": "default-invoice-memo",
+              "description": "The default customer-facing memo copied onto new invoices",
+              "valueName": "value",
+              "clearable": true,
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "defaultInvoiceMemo"
+                ]
+              }
+            },
+            {
+              "name": "default-origin-location-id",
+              "description": "The organization's default origin location, used as a fallback when new flows (such as fulfillment orders) need an origin. May be set to null to clear the default",
+              "valueName": "uuid",
+              "clearable": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sends": {
+                "body": [
+                  "defaultOriginLocationId"
+                ]
+              }
+            },
+            {
+              "name": "default-payment-instructions",
+              "description": "The default remittance text copied onto new invoices",
+              "valueName": "value",
+              "clearable": true,
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "defaultPaymentInstructions"
+                ]
+              }
+            },
+            {
+              "name": "default-payment-term",
+              "description": "The fallback payment term used for invoices when the project has none, named by the ID or the label the payment term list returns",
+              "valueName": "value",
+              "clearable": true,
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "defaultPaymentTerm"
+                ]
+              }
+            },
+            {
+              "name": "default-receive-location-id",
+              "description": "The organization's default receive location, used as a fallback when new purchase orders need a destination. May be set to null to clear the default",
+              "valueName": "uuid",
+              "clearable": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sends": {
+                "body": [
+                  "defaultReceiveLocationId"
+                ]
+              }
+            },
+            {
+              "name": "default-return-location-id",
+              "description": "The organization's default return location, used as a fallback when new return orders need a destination. May be set to null to clear the default",
+              "valueName": "uuid",
+              "clearable": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sends": {
+                "body": [
+                  "defaultReturnLocationId"
+                ]
+              }
+            },
+            {
+              "name": "invoice-number-prefix",
+              "description": "The prefix used for future auto-generated invoice numbers",
+              "valueName": "value",
+              "clearable": true,
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "invoiceNumberPrefix"
+                ]
+              }
+            },
+            {
+              "name": "name",
+              "description": "The new display name for the organization. If set, it cannot be empty",
+              "valueName": "value",
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "name"
+                ]
+              }
+            },
+            {
+              "name": "serial-pattern",
+              "description": "serialPatterns",
+              "valueName": "kind=,length=,prefix=",
+              "repeatable": true,
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "sends": {
+                "body": [
+                  "serialPatterns"
+                ]
+              },
+              "element": [
+                "kind",
+                "length",
+                "prefix"
+              ],
+              "elementTypes": {
+                "length": [
+                  "integer",
+                  "null"
+                ],
+                "prefix": [
+                  "string",
+                  "null"
+                ]
+              },
+              "elementEnums": {
+                "kind": [
+                  "ALPHA",
+                  "ALPHANUMERIC",
+                  "HEX",
+                  "MAC_ADDRESS",
+                  "NUMERIC",
+                  "UUID"
+                ]
+              }
+            },
+            {
+              "name": "timezone",
+              "description": "The new timezone for the organization. If set, it must be a valid IANA timezone identifier",
+              "valueName": "value",
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "timezone"
+                ]
+              }
+            },
+            {
+              "name": "weighted-average-cost-of-capital",
+              "description": "The weighted average cost of capital used by the billing-lifecycle carrying-cost calculation. Expressed as a decimal in [0.01, 1.00] (1% .. 100%). It cannot be cleared",
+              "valueName": "value",
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "weightedAverageCostOfCapital"
+                ]
+              }
+            },
+            {
+              "name": "unset",
+              "description": "A field to clear, named as its flag is, repeatable",
+              "valueName": "field",
+              "repeatable": true,
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "name": "input",
+              "description": "A file holding the JSON request body, or - for standard input. A flag given as well replaces its field",
+              "valueName": "path",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "json",
+              "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "examples": [
+            {
+              "description": "Patch organization",
+              "command": "hardfin organization update --serial-pattern kind=<value>,length=<value>,prefix=<value>"
+            }
+          ]
+        },
+        {
+          "name": "accounting",
+          "path": [
+            "organization",
+            "accounting"
+          ],
+          "summary": "Accounting commands",
+          "description": "Accounting commands",
+          "runs": false,
+          "endpoint": null,
+          "arguments": [],
+          "flags": [],
+          "examples": [],
+          "subcommands": [
+            {
+              "name": "get",
+              "path": [
+                "organization",
+                "accounting",
+                "get"
+              ],
+              "summary": "Get organization ledger accounts",
+              "description": "Get organization ledger accounts",
+              "runs": true,
+              "endpoint": {
+                "method": "GET",
+                "path": "/organization/accounting"
+              },
+              "arguments": [],
+              "flags": [
+                {
+                  "name": "json",
+                  "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+                  "schema": {
+                    "type": "boolean"
+                  }
+                }
+              ],
+              "examples": [
+                {
+                  "description": "Get organization ledger accounts",
+                  "command": "hardfin organization accounting get"
+                }
+              ]
+            },
+            {
+              "name": "update",
+              "path": [
+                "organization",
+                "accounting",
+                "update"
+              ],
+              "summary": "Update organization ledger accounts",
+              "description": "Update organization ledger accounts",
+              "runs": true,
+              "endpoint": {
+                "method": "PATCH",
+                "path": "/organization/accounting"
+              },
+              "arguments": [],
+              "flags": [
+                {
+                  "name": "input",
+                  "description": "A file holding the JSON request body, or - for standard input. A flag given as well replaces its field",
+                  "valueName": "path",
+                  "schema": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "name": "json",
+                  "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+                  "schema": {
+                    "type": "boolean"
+                  }
+                }
+              ],
+              "examples": [
+                {
+                  "description": "Update organization ledger accounts",
+                  "command": "hardfin organization accounting update"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "attention-thresholds",
+          "path": [
+            "organization",
+            "attention-thresholds"
+          ],
+          "summary": "Attention thresholds commands",
+          "description": "Attention thresholds commands",
+          "runs": false,
+          "endpoint": null,
+          "arguments": [],
+          "flags": [],
+          "examples": [],
+          "subcommands": [
+            {
+              "name": "get",
+              "path": [
+                "organization",
+                "attention-thresholds",
+                "get"
+              ],
+              "summary": "Get attention thresholds",
+              "description": "Get attention thresholds",
+              "runs": true,
+              "endpoint": {
+                "method": "GET",
+                "path": "/organization/attention-thresholds"
+              },
+              "arguments": [],
+              "flags": [
+                {
+                  "name": "json",
+                  "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+                  "schema": {
+                    "type": "boolean"
+                  }
+                }
+              ],
+              "examples": [
+                {
+                  "description": "Get attention thresholds",
+                  "command": "hardfin organization attention-thresholds get"
+                }
+              ]
+            },
+            {
+              "name": "update",
+              "path": [
+                "organization",
+                "attention-thresholds",
+                "update"
+              ],
+              "summary": "Update attention thresholds",
+              "description": "Update attention thresholds",
+              "runs": true,
+              "endpoint": {
+                "method": "PUT",
+                "path": "/organization/attention-thresholds"
+              },
+              "arguments": [],
+              "flags": [
+                {
+                  "name": "threshold",
+                  "description": "The organization's full override set, which is required and never null. A reason left out returns to its default, and an empty set clears every override",
+                  "valueName": "criticalDays=,entity=,noticeDays=,reason=,warningDays=",
+                  "required": true,
+                  "repeatable": true,
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "sends": {
+                    "body": [
+                      "thresholds"
+                    ]
+                  },
+                  "element": [
+                    "criticalDays",
+                    "entity",
+                    "noticeDays",
+                    "reason",
+                    "warningDays"
+                  ],
+                  "elementTypes": {
+                    "criticalDays": [
+                      "integer"
+                    ],
+                    "noticeDays": [
+                      "integer"
+                    ],
+                    "warningDays": [
+                      "integer"
+                    ]
+                  },
+                  "elementEnums": {
+                    "entity": [
+                      "INBOUND_SHIPMENT",
+                      "OUTBOUND_SHIPMENT"
+                    ],
+                    "reason": [
+                      "DELIVERED_NOT_RECEIVED",
+                      "OPEN_NOT_SHIPPED",
+                      "SHIPPED_NOT_DELIVERED"
+                    ]
+                  }
+                },
+                {
+                  "name": "input",
+                  "description": "A file holding the JSON request body, or - for standard input. A flag given as well replaces its field",
+                  "valueName": "path",
+                  "schema": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "name": "json",
+                  "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+                  "schema": {
+                    "type": "boolean"
+                  }
+                }
+              ],
+              "examples": [
+                {
+                  "description": "Update attention thresholds",
+                  "command": "hardfin organization attention-thresholds update --threshold criticalDays=<value>,entity=<value>,noticeDays=<value>,reason=<value>,warningDays=<value>"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "external-user",
+          "path": [
+            "organization",
+            "external-user"
+          ],
+          "summary": "External user commands",
+          "description": "External user commands",
+          "runs": false,
+          "endpoint": null,
+          "arguments": [],
+          "flags": [],
+          "examples": [],
+          "subcommands": [
+            {
+              "name": "list",
+              "path": [
+                "organization",
+                "external-user",
+                "list"
+              ],
+              "summary": "Get external users",
+              "description": "Get external users",
+              "runs": true,
+              "endpoint": {
+                "method": "GET",
+                "path": "/organization/external-user"
+              },
+              "arguments": [],
+              "flags": [
+                {
+                  "name": "json",
+                  "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+                  "schema": {
+                    "type": "boolean"
+                  }
+                }
+              ],
+              "examples": [
+                {
+                  "description": "Get external users",
+                  "command": "hardfin organization external-user list"
+                }
+              ]
+            },
+            {
+              "name": "create",
+              "path": [
+                "organization",
+                "external-user",
+                "create"
+              ],
+              "summary": "Create external user",
+              "description": "Create external user",
+              "runs": true,
+              "endpoint": {
+                "method": "POST",
+                "path": "/organization/external-user"
+              },
+              "arguments": [],
+              "flags": [
+                {
+                  "name": "email",
+                  "description": "The email address of the external user",
+                  "valueName": "value",
+                  "required": true,
+                  "schema": {
+                    "type": "string"
+                  },
+                  "sends": {
+                    "body": [
+                      "email"
+                    ]
+                  }
+                },
+                {
+                  "name": "first-name",
+                  "description": "firstName",
+                  "valueName": "value",
+                  "clearable": true,
+                  "schema": {
+                    "type": "string"
+                  },
+                  "sends": {
+                    "body": [
+                      "firstName"
+                    ]
+                  }
+                },
+                {
+                  "name": "label",
+                  "description": "A descriptive label for the external user",
+                  "valueName": "value",
+                  "required": true,
+                  "schema": {
+                    "type": "string"
+                  },
+                  "sends": {
+                    "body": [
+                      "label"
+                    ]
+                  }
+                },
+                {
+                  "name": "last-name",
+                  "description": "lastName",
+                  "valueName": "value",
+                  "clearable": true,
+                  "schema": {
+                    "type": "string"
+                  },
+                  "sends": {
+                    "body": [
+                      "lastName"
+                    ]
+                  }
+                },
+                {
+                  "name": "notifications-update",
+                  "description": "updates",
+                  "valueName": "activeChannels=,messageType=",
+                  "repeatable": true,
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "sends": {
+                    "body": [
+                      "notifications",
+                      "updates"
+                    ]
+                  },
+                  "element": [
+                    "activeChannels",
+                    "messageType"
+                  ],
+                  "elementTypes": {
+                    "activeChannels": [
+                      "array"
+                    ]
+                  },
+                  "elementLists": [
+                    "activeChannels"
+                  ],
+                  "elementEnums": {
+                    "messageType": [
+                      "ASSET_SUMMARY",
+                      "FULFILLMENT_ORDER_CANCELLED",
+                      "FULFILLMENT_ORDER_DELIVERED",
+                      "FULFILLMENT_ORDER_SHIPPED",
+                      "INBOUND_SHIPMENT_DELIVERED",
+                      "INBOUND_SHIPMENT_RECEIVED",
+                      "INBOUND_SHIPMENT_SHIPPED",
+                      "OUTBOUND_SHIPMENT_DELIVERED",
+                      "OUTBOUND_SHIPMENT_SHIPPED",
+                      "PURCHASE_ORDER_CANCELLED",
+                      "PURCHASE_ORDER_DELIVERED",
+                      "PURCHASE_ORDER_RECEIVED",
+                      "PURCHASE_ORDER_SHIPPED",
+                      "RETURN_ORDER_CANCELLED",
+                      "RETURN_ORDER_DELIVERED",
+                      "RETURN_ORDER_RECEIVED",
+                      "RETURN_ORDER_SHIPPED"
+                    ]
+                  }
+                },
+                {
+                  "name": "unset",
+                  "description": "A field to clear, named as its flag is, repeatable",
+                  "valueName": "field",
+                  "repeatable": true,
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "name": "input",
+                  "description": "A file holding the JSON request body, or - for standard input. A flag given as well replaces its field",
+                  "valueName": "path",
+                  "schema": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "name": "json",
+                  "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+                  "schema": {
+                    "type": "boolean"
+                  }
+                }
+              ],
+              "examples": [
+                {
+                  "description": "Create external user",
+                  "command": "hardfin organization external-user create --email <value> --label <value> --notifications-update activeChannels=<value>,messageType=<value>"
+                }
+              ]
+            },
+            {
+              "name": "get",
+              "path": [
+                "organization",
+                "external-user",
+                "get"
+              ],
+              "summary": "Get external user",
+              "description": "Get external user",
+              "runs": true,
+              "endpoint": {
+                "method": "GET",
+                "path": "/organization/external-user/{externalUserKey}"
+              },
+              "arguments": [
+                {
+                  "name": "externalUserKey",
+                  "description": "The external user's key",
+                  "required": true
+                }
+              ],
+              "flags": [
+                {
+                  "name": "json",
+                  "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+                  "schema": {
+                    "type": "boolean"
+                  }
+                }
+              ],
+              "examples": [
+                {
+                  "description": "Get external user",
+                  "command": "hardfin organization external-user get oeu_7hq2mx9pkr4stz8w"
+                }
+              ]
+            },
+            {
+              "name": "update",
+              "path": [
+                "organization",
+                "external-user",
+                "update"
+              ],
+              "summary": "Update external user",
+              "description": "Update external user",
+              "runs": true,
+              "endpoint": {
+                "method": "PATCH",
+                "path": "/organization/external-user/{externalUserKey}"
+              },
+              "arguments": [
+                {
+                  "name": "externalUserKey",
+                  "description": "The external user's key",
+                  "required": true
+                }
+              ],
+              "flags": [
+                {
+                  "name": "email",
+                  "description": "The updated email address of the external user",
+                  "valueName": "value",
+                  "clearable": true,
+                  "schema": {
+                    "type": "string"
+                  },
+                  "sends": {
+                    "body": [
+                      "email"
+                    ]
+                  }
+                },
+                {
+                  "name": "label",
+                  "description": "The updated descriptive label for the external user",
+                  "valueName": "value",
+                  "clearable": true,
+                  "schema": {
+                    "type": "string"
+                  },
+                  "sends": {
+                    "body": [
+                      "label"
+                    ]
+                  }
+                },
+                {
+                  "name": "clear-notifications",
+                  "description": "Send null for notifications, which clears notifications",
+                  "clears": true,
+                  "schema": {
+                    "type": "boolean"
+                  },
+                  "sends": {
+                    "body": [
+                      "notifications"
+                    ]
+                  }
+                },
+                {
+                  "name": "notifications-update",
+                  "description": "updates",
+                  "valueName": "activeChannels=,messageType=",
+                  "repeatable": true,
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "sends": {
+                    "body": [
+                      "notifications",
+                      "updates"
+                    ]
+                  },
+                  "element": [
+                    "activeChannels",
+                    "messageType"
+                  ],
+                  "elementTypes": {
+                    "activeChannels": [
+                      "array"
+                    ]
+                  },
+                  "elementLists": [
+                    "activeChannels"
+                  ],
+                  "elementEnums": {
+                    "messageType": [
+                      "ASSET_SUMMARY",
+                      "FULFILLMENT_ORDER_CANCELLED",
+                      "FULFILLMENT_ORDER_DELIVERED",
+                      "FULFILLMENT_ORDER_SHIPPED",
+                      "INBOUND_SHIPMENT_DELIVERED",
+                      "INBOUND_SHIPMENT_RECEIVED",
+                      "INBOUND_SHIPMENT_SHIPPED",
+                      "OUTBOUND_SHIPMENT_DELIVERED",
+                      "OUTBOUND_SHIPMENT_SHIPPED",
+                      "PURCHASE_ORDER_CANCELLED",
+                      "PURCHASE_ORDER_DELIVERED",
+                      "PURCHASE_ORDER_RECEIVED",
+                      "PURCHASE_ORDER_SHIPPED",
+                      "RETURN_ORDER_CANCELLED",
+                      "RETURN_ORDER_DELIVERED",
+                      "RETURN_ORDER_RECEIVED",
+                      "RETURN_ORDER_SHIPPED"
+                    ]
+                  }
+                },
+                {
+                  "name": "unset",
+                  "description": "A field to clear, named as its flag is, repeatable",
+                  "valueName": "field",
+                  "repeatable": true,
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "name": "input",
+                  "description": "A file holding the JSON request body, or - for standard input. A flag given as well replaces its field",
+                  "valueName": "path",
+                  "schema": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "name": "json",
+                  "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+                  "schema": {
+                    "type": "boolean"
+                  }
+                }
+              ],
+              "examples": [
+                {
+                  "description": "Update external user",
+                  "command": "hardfin organization external-user update oeu_7hq2mx9pkr4stz8w --notifications-update activeChannels=<value>,messageType=<value>"
+                }
+              ]
+            },
+            {
+              "name": "delete",
+              "path": [
+                "organization",
+                "external-user",
+                "delete"
+              ],
+              "summary": "Delete external user",
+              "description": "Delete external user",
+              "runs": true,
+              "endpoint": {
+                "method": "DELETE",
+                "path": "/organization/external-user/{externalUserKey}"
+              },
+              "arguments": [
+                {
+                  "name": "externalUserKey",
+                  "description": "The external user's key",
+                  "required": true
+                }
+              ],
+              "flags": [
+                {
+                  "name": "json",
+                  "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+                  "schema": {
+                    "type": "boolean"
+                  }
+                }
+              ],
+              "examples": [
+                {
+                  "description": "Delete external user",
+                  "command": "hardfin organization external-user delete oeu_7hq2mx9pkr4stz8w"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "user",
+          "path": [
+            "organization",
+            "user"
+          ],
+          "summary": "User commands",
+          "description": "User commands",
+          "runs": false,
+          "endpoint": null,
+          "arguments": [],
+          "flags": [],
+          "examples": [],
+          "subcommands": [
+            {
+              "name": "list",
+              "path": [
+                "organization",
+                "user",
+                "list"
+              ],
+              "summary": "Get organization members",
+              "description": "Get organization members",
+              "runs": true,
+              "endpoint": {
+                "method": "GET",
+                "path": "/organization/user"
+              },
+              "arguments": [],
+              "flags": [
+                {
+                  "name": "json",
+                  "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+                  "schema": {
+                    "type": "boolean"
+                  }
+                }
+              ],
+              "examples": [
+                {
+                  "description": "Get organization members",
+                  "command": "hardfin organization user list"
+                }
+              ]
+            },
+            {
+              "name": "update",
+              "path": [
+                "organization",
+                "user",
+                "update"
+              ],
+              "summary": "Update member",
+              "description": "Update member",
+              "runs": true,
+              "endpoint": {
+                "method": "PATCH",
+                "path": "/organization/user/{userKey}"
+              },
+              "arguments": [
+                {
+                  "name": "userKey",
+                  "description": "The member's user key",
+                  "required": true
+                }
+              ],
+              "flags": [
+                {
+                  "name": "clear-default-rate",
+                  "description": "Send null for defaultRate, which clears the new default rate for the member",
+                  "clears": true,
+                  "schema": {
+                    "type": "boolean"
+                  },
+                  "sends": {
+                    "body": [
+                      "defaultRate"
+                    ]
+                  }
+                },
+                {
+                  "name": "default-rate-value",
+                  "description": "The new default rate for the member. Can be set to null to clear the rate. A caller whose role does not grant `update` on `time.rate` is refused with a 403 when sending it: the exact value as a decimal string, which cannot be negative, sent with at most two decimal places, given with --default-rate-iso-code",
+                  "valueName": "value",
+                  "schema": {
+                    "type": "string"
+                  },
+                  "sends": {
+                    "body": [
+                      "defaultRate",
+                      "amount"
+                    ]
+                  },
+                  "together": [
+                    "default-rate-iso-code"
+                  ]
+                },
+                {
+                  "name": "default-rate-iso-code",
+                  "description": "The new default rate for the member. Can be set to null to clear the rate. A caller whose role does not grant `update` on `time.rate` is refused with a 403 when sending it: the value's ISO 4217 currency code, given with --default-rate-value",
+                  "valueName": "value",
+                  "schema": {
+                    "type": "string",
+                    "enum": [
+                      "CAD",
+                      "EUR",
+                      "GBP",
+                      "USD"
+                    ]
+                  },
+                  "sends": {
+                    "body": [
+                      "defaultRate",
+                      "isoCode"
+                    ]
+                  },
+                  "together": [
+                    "default-rate-value"
+                  ]
+                },
+                {
+                  "name": "first-name",
+                  "description": "The new first name for the member. A caller whose role does not grant `update` on `organization.member` is refused with a 403 when sending it",
+                  "valueName": "value",
+                  "clearable": true,
+                  "schema": {
+                    "type": "string"
+                  },
+                  "sends": {
+                    "body": [
+                      "firstName"
+                    ]
+                  }
+                },
+                {
+                  "name": "last-name",
+                  "description": "The new last name for the member. A caller whose role does not grant `update` on `organization.member` is refused with a 403 when sending it",
+                  "valueName": "value",
+                  "clearable": true,
+                  "schema": {
+                    "type": "string"
+                  },
+                  "sends": {
+                    "body": [
+                      "lastName"
+                    ]
+                  }
+                },
+                {
+                  "name": "unset",
+                  "description": "A field to clear, named as its flag is, repeatable",
+                  "valueName": "field",
+                  "repeatable": true,
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "name": "input",
+                  "description": "A file holding the JSON request body, or - for standard input. A flag given as well replaces its field",
+                  "valueName": "path",
+                  "schema": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "name": "json",
+                  "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+                  "schema": {
+                    "type": "boolean"
+                  }
+                }
+              ],
+              "examples": [
+                {
+                  "description": "Update member",
+                  "command": "hardfin organization user update prs_4kz8wq2mx7pnrt6s"
+                }
+              ]
+            },
+            {
+              "name": "activate",
+              "path": [
+                "organization",
+                "user",
+                "activate"
+              ],
+              "summary": "Activate member",
+              "description": "Activate member",
+              "runs": true,
+              "endpoint": {
+                "method": "POST",
+                "path": "/organization/user/{userKey}/activate"
+              },
+              "arguments": [
+                {
+                  "name": "userKey",
+                  "description": "The member's user key",
+                  "required": true
+                }
+              ],
+              "flags": [
+                {
+                  "name": "json",
+                  "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+                  "schema": {
+                    "type": "boolean"
+                  }
+                }
+              ],
+              "examples": [
+                {
+                  "description": "Activate member",
+                  "command": "hardfin organization user activate prs_4kz8wq2mx7pnrt6s"
+                }
+              ]
+            },
+            {
+              "name": "deactivate",
+              "path": [
+                "organization",
+                "user",
+                "deactivate"
+              ],
+              "summary": "Deactivate member",
+              "description": "Deactivate member",
+              "runs": true,
+              "endpoint": {
+                "method": "POST",
+                "path": "/organization/user/{userKey}/deactivate"
+              },
+              "arguments": [
+                {
+                  "name": "userKey",
+                  "description": "The member's user key",
+                  "required": true
+                }
+              ],
+              "flags": [
+                {
+                  "name": "json",
+                  "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+                  "schema": {
+                    "type": "boolean"
+                  }
+                }
+              ],
+              "examples": [
+                {
+                  "description": "Deactivate member",
+                  "command": "hardfin organization user deactivate prs_4kz8wq2mx7pnrt6s"
+                }
+              ]
+            },
+            {
+              "name": "demote",
+              "path": [
+                "organization",
+                "user",
+                "demote"
+              ],
+              "summary": "Demote member from admin",
+              "description": "Demote member from admin",
+              "runs": true,
+              "endpoint": {
+                "method": "POST",
+                "path": "/organization/user/{userKey}/demote"
+              },
+              "arguments": [
+                {
+                  "name": "userKey",
+                  "description": "The member's user key",
+                  "required": true
+                }
+              ],
+              "flags": [
+                {
+                  "name": "json",
+                  "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+                  "schema": {
+                    "type": "boolean"
+                  }
+                }
+              ],
+              "examples": [
+                {
+                  "description": "Demote member from admin",
+                  "command": "hardfin organization user demote prs_4kz8wq2mx7pnrt6s"
+                }
+              ]
+            },
+            {
+              "name": "promote",
+              "path": [
+                "organization",
+                "user",
+                "promote"
+              ],
+              "summary": "Promote member to admin",
+              "description": "Promote member to admin",
+              "runs": true,
+              "endpoint": {
+                "method": "POST",
+                "path": "/organization/user/{userKey}/promote"
+              },
+              "arguments": [
+                {
+                  "name": "userKey",
+                  "description": "The member's user key",
+                  "required": true
+                }
+              ],
+              "flags": [
+                {
+                  "name": "json",
+                  "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+                  "schema": {
+                    "type": "boolean"
+                  }
+                }
+              ],
+              "examples": [
+                {
+                  "description": "Promote member to admin",
+                  "command": "hardfin organization user promote prs_4kz8wq2mx7pnrt6s"
+                }
+              ]
             }
           ]
         }
@@ -12879,20 +15141,6 @@
               }
             },
             {
-              "name": "total-contract-value",
-              "description": "The contract's total value. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
-              "schema": {
-                "type": "null"
-              },
-              "sends": {
-                "body": [
-                  "totalContractValue"
-                ]
-              }
-            },
-            {
               "name": "total-contract-value-value",
               "description": "The contract's total value: the exact value as a decimal string, which cannot be negative, sent with at most two decimal places, given with --total-contract-value-iso-code",
               "valueName": "value",
@@ -13168,12 +15416,11 @@
               }
             },
             {
-              "name": "discount",
-              "description": "The discount applied to the project. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
+              "name": "clear-discount",
+              "description": "Send null for discount, which clears the discount applied to the project",
+              "clears": true,
               "schema": {
-                "type": "null"
+                "type": "boolean"
               },
               "sends": {
                 "body": [
@@ -13586,12 +15833,11 @@
               }
             },
             {
-              "name": "total-contract-value",
-              "description": "The contract's total value. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
+              "name": "clear-total-contract-value",
+              "description": "Send null for totalContractValue, which clears the contract's total value",
+              "clears": true,
               "schema": {
-                "type": "null"
+                "type": "boolean"
               },
               "sends": {
                 "body": [
@@ -13715,6 +15961,101 @@
             {
               "description": "Patch project",
               "command": "hardfin project update proj_7hq2lm9xcr4twz8k --line-item itemId=<value>,transactionType=<value>,aggregationKey=<value>,quantity=<value>"
+            }
+          ]
+        },
+        {
+          "name": "file",
+          "path": [
+            "project",
+            "file"
+          ],
+          "summary": "File commands",
+          "description": "File commands",
+          "runs": false,
+          "endpoint": null,
+          "arguments": [],
+          "flags": [],
+          "examples": [],
+          "subcommands": [
+            {
+              "name": "list",
+              "path": [
+                "project",
+                "file",
+                "list"
+              ],
+              "summary": "Get project files",
+              "description": "Get project files",
+              "runs": true,
+              "endpoint": {
+                "method": "GET",
+                "path": "/project/{projectKey}/file"
+              },
+              "arguments": [
+                {
+                  "name": "projectKey",
+                  "description": "The project's key",
+                  "required": true
+                }
+              ],
+              "flags": [
+                {
+                  "name": "json",
+                  "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+                  "schema": {
+                    "type": "boolean"
+                  }
+                }
+              ],
+              "examples": [
+                {
+                  "description": "Get project files",
+                  "command": "hardfin project file list proj_7hq2lm9xcr4twz8k"
+                }
+              ]
+            },
+            {
+              "name": "delete",
+              "path": [
+                "project",
+                "file",
+                "delete"
+              ],
+              "summary": "Unlink project file",
+              "description": "Unlink project file",
+              "runs": true,
+              "endpoint": {
+                "method": "DELETE",
+                "path": "/project/{projectKey}/file/{fileKey}"
+              },
+              "arguments": [
+                {
+                  "name": "projectKey",
+                  "description": "The project's key",
+                  "required": true
+                },
+                {
+                  "name": "fileKey",
+                  "description": "The key of the file to detach",
+                  "required": true
+                }
+              ],
+              "flags": [
+                {
+                  "name": "json",
+                  "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+                  "schema": {
+                    "type": "boolean"
+                  }
+                }
+              ],
+              "examples": [
+                {
+                  "description": "Unlink project file",
+                  "command": "hardfin project file delete proj_7hq2lm9xcr4twz8k file_7hq2mx9pkr4stz8w"
+                }
+              ]
             }
           ]
         },
@@ -13985,12 +16326,11 @@
                   }
                 },
                 {
-                  "name": "fixed-price",
-                  "description": "The flat price when pricingMode is FIXED, and is not sent together with unitPrice. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-fixed-price",
+                  "description": "Send null for fixedPrice, which clears the flat price when pricingMode is FIXED",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -14128,12 +16468,11 @@
                   }
                 },
                 {
-                  "name": "milestone-phases",
-                  "description": "The named phases of a milestone line item and each one's share of its total. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-milestone-phases",
+                  "description": "Send null for milestonePhases, which clears the named phases of a milestone line item and each one's share of its total",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -14217,12 +16556,11 @@
                   }
                 },
                 {
-                  "name": "total-override",
-                  "description": "A negotiated total for a periodic line item that replaces the computed one, in the project's currency. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-total-override",
+                  "description": "Send null for totalOverride, which clears a negotiated total for a periodic line item that replaces the computed one",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -14289,12 +16627,11 @@
                   }
                 },
                 {
-                  "name": "unit-price",
-                  "description": "The price of one unit for each charge, and is not sent together with fixedPrice. Takes only null, which clears it",
-                  "valueName": "null",
-                  "clearable": true,
+                  "name": "clear-unit-price",
+                  "description": "Send null for unitPrice, which clears the price of one unit for each charge",
+                  "clears": true,
                   "schema": {
-                    "type": "null"
+                    "type": "boolean"
                   },
                   "sends": {
                     "body": [
@@ -14639,13 +16976,28 @@
             },
             {
               "name": "search",
-              "description": "Text to find in the order's number, its status, its supplier's name, its locations' names, or its items' names and SKUs",
+              "description": "Text to find in the order's number, its external purchase order number, its status, its supplier's name, its locations' names, or its items' names and SKUs",
               "valueName": "value",
               "schema": {
                 "type": "string"
               },
               "sends": {
                 "query": "search"
+              }
+            },
+            {
+              "name": "external-purchase-order-numbers",
+              "description": "External purchase order numbers, and an order whose external purchase order number exactly matches one of them is listed",
+              "valueName": "value",
+              "repeatable": true,
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "sends": {
+                "query": "externalPurchaseOrderNumbers"
               }
             },
             {
@@ -14995,20 +17347,6 @@
               }
             },
             {
-              "name": "transport-reference-details",
-              "description": "The carrier the supplier ships the order with and its transport reference. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
-              "schema": {
-                "type": "null"
-              },
-              "sends": {
-                "body": [
-                  "transportReferenceDetails"
-                ]
-              }
-            },
-            {
               "name": "transport-reference-details-carrier",
               "description": "The carrier, or null when none is named",
               "valueName": "value",
@@ -15351,12 +17689,11 @@
               }
             },
             {
-              "name": "transport-reference-details",
-              "description": "The carrier the supplier ships the order with and its transport reference, where a field left out keeps its stored value and null clears all of them. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
+              "name": "clear-transport-reference-details",
+              "description": "Send null for transportReferenceDetails, which clears the carrier the supplier ships the order with and its transport reference",
+              "clears": true,
               "schema": {
-                "type": "null"
+                "type": "boolean"
               },
               "sends": {
                 "body": [
@@ -16381,20 +18718,6 @@
               }
             },
             {
-              "name": "transport-reference-details",
-              "description": "The carrier the items are returned with and its transport reference. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
-              "schema": {
-                "type": "null"
-              },
-              "sends": {
-                "body": [
-                  "transportReferenceDetails"
-                ]
-              }
-            },
-            {
               "name": "transport-reference-details-carrier",
               "description": "The carrier, or null when none is named",
               "valueName": "value",
@@ -16748,12 +19071,11 @@
               }
             },
             {
-              "name": "transport-reference-details",
-              "description": "The carrier the items are returned with and its transport reference, where a field left out keeps its stored value and null clears all of them. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
+              "name": "clear-transport-reference-details",
+              "description": "Send null for transportReferenceDetails, which clears the carrier the items are returned with and its transport reference",
+              "clears": true,
               "schema": {
-                "type": "null"
+                "type": "boolean"
               },
               "sends": {
                 "body": [
@@ -17333,7 +19655,7 @@
             "list"
           ],
           "summary": "List shipments",
-          "description": "List shipments",
+          "description": "List shipments. The list does not load serial numbers, so each line answers serials and pendingSerials as null, which means not loaded rather than none. Read serialCount for how many a line has, and get the shipment with hardfin shipment get to read them",
           "runs": true,
           "endpoint": {
             "method": "GET",
@@ -17636,7 +19958,7 @@
           "flags": [
             {
               "name": "delivered-at",
-              "description": "When the shipment arrived, which cannot be before shippedAt, or null while it has not",
+              "description": "When the shipment arrived, or null while it has not. It cannot be before shippedAt or more than five minutes ahead of the server's clock",
               "valueName": "value",
               "clearable": true,
               "schema": {
@@ -17827,7 +20149,7 @@
             },
             {
               "name": "shipped-at",
-              "description": "When the shipment left, or null while it has not",
+              "description": "When the shipment left, or null while it has not. It cannot be more than five minutes ahead of the server's clock",
               "valueName": "value",
               "clearable": true,
               "schema": {
@@ -17850,20 +20172,6 @@
               "sends": {
                 "body": [
                   "shippedAtTimezone"
-                ]
-              }
-            },
-            {
-              "name": "shipping-cost",
-              "description": "What the shipment cost to send, which cannot be negative. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
-              "schema": {
-                "type": "null"
-              },
-              "sends": {
-                "body": [
-                  "shippingCost"
                 ]
               }
             },
@@ -17919,20 +20227,6 @@
               "sends": {
                 "body": [
                   "toLocationId"
-                ]
-              }
-            },
-            {
-              "name": "tracking-number-details",
-              "description": "Who carries the shipment and its tracking number. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
-              "schema": {
-                "type": "null"
-              },
-              "sends": {
-                "body": [
-                  "trackingNumberDetails"
                 ]
               }
             },
@@ -18146,7 +20440,7 @@
           "flags": [
             {
               "name": "delivered-at",
-              "description": "When the shipment arrived, which cannot be before shippedAt",
+              "description": "When the shipment arrived, and can only be corrected here once the shipment is delivered or received. The deliver endpoint records a first delivery. It cannot be before shippedAt, after the shipment's receipt, or more than five minutes ahead of the server's clock",
               "valueName": "value",
               "clearable": true,
               "schema": {
@@ -18346,7 +20640,7 @@
             },
             {
               "name": "shipped-at",
-              "description": "When the shipment left, which cannot be cleared and, on an outbound shipment, can only be corrected after it has shipped",
+              "description": "When the shipment left, which cannot be cleared and, on an outbound shipment, can only be corrected after it has shipped. It cannot be after the shipment's delivery or receipt, or more than five minutes ahead of the server's clock",
               "valueName": "value",
               "clearable": true,
               "schema": {
@@ -18373,12 +20667,11 @@
               }
             },
             {
-              "name": "shipping-cost",
-              "description": "What the shipment cost to send, which cannot be negative. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
+              "name": "clear-shipping-cost",
+              "description": "Send null for shippingCost, which clears what the shipment cost to send",
+              "clears": true,
               "schema": {
-                "type": "null"
+                "type": "boolean"
               },
               "sends": {
                 "body": [
@@ -18442,12 +20735,11 @@
               }
             },
             {
-              "name": "tracking-number-details",
-              "description": "Who carries the shipment and its tracking number, where a field left out keeps its stored value and null clears all of them. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
+              "name": "clear-tracking-number-details",
+              "description": "Send null for trackingNumberDetails, which clears who carries the shipment and its tracking number",
+              "clears": true,
               "schema": {
-                "type": "null"
+                "type": "boolean"
               },
               "sends": {
                 "body": [
@@ -18700,7 +20992,7 @@
           "flags": [
             {
               "name": "delivered-at",
-              "description": "When the shipment arrived",
+              "description": "When the shipment arrived, which cannot be before its ship time or more than five minutes ahead of the server's clock",
               "valueName": "value",
               "required": true,
               "schema": {
@@ -18884,7 +21176,7 @@
             },
             {
               "name": "received-at",
-              "description": "When the items were received, which cannot be more than five minutes ahead of the server's clock",
+              "description": "When the items were received, which cannot be before the shipment's delivery or ship time, or more than five minutes ahead of the server's clock",
               "valueName": "value",
               "required": true,
               "schema": {
@@ -19042,7 +21334,7 @@
             },
             {
               "name": "shipped-at",
-              "description": "When the shipment left",
+              "description": "When the shipment left, which cannot be after its delivery or more than five minutes ahead of the server's clock",
               "valueName": "value",
               "required": true,
               "schema": {
@@ -19069,12 +21361,11 @@
               }
             },
             {
-              "name": "shipping-cost",
-              "description": "What the shipment cost to send, which cannot be negative. Takes only null, which clears it",
-              "valueName": "null",
-              "clearable": true,
+              "name": "clear-shipping-cost",
+              "description": "Send null for shippingCost, which clears what the shipment cost to send",
+              "clears": true,
               "schema": {
-                "type": "null"
+                "type": "boolean"
               },
               "sends": {
                 "body": [
@@ -19207,6 +21498,638 @@
                   "command": "hardfin shipment tracking list shp_2wn8kq4lxp7rtz3m"
                 }
               ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "time-record",
+      "path": [
+        "time-record"
+      ],
+      "summary": "Time record commands",
+      "description": "Time record commands",
+      "runs": false,
+      "endpoint": null,
+      "arguments": [],
+      "flags": [],
+      "examples": [],
+      "subcommands": [
+        {
+          "name": "list",
+          "path": [
+            "time-record",
+            "list"
+          ],
+          "summary": "Get time records",
+          "description": "Get time records",
+          "runs": true,
+          "endpoint": {
+            "method": "GET",
+            "path": "/time-record"
+          },
+          "arguments": [],
+          "flags": [
+            {
+              "name": "page",
+              "description": "The page to return, starting at 1",
+              "valueName": "number",
+              "schema": {
+                "type": "integer"
+              },
+              "sends": {
+                "query": "page"
+              }
+            },
+            {
+              "name": "limit",
+              "description": "The number of records per page, from 1 to 100, and 100 when left out",
+              "valueName": "number",
+              "schema": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "sends": {
+                "query": "limit"
+              }
+            },
+            {
+              "name": "sort-by",
+              "description": "The field to sort by. Sorting by `rate` or `amount` is refused with a 403 unless the caller's role grants `read` on `time.rate`",
+              "valueName": "value",
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "incurredOn",
+                  "duration",
+                  "rate",
+                  "amount",
+                  "worker",
+                  "project",
+                  "category"
+                ]
+              },
+              "sends": {
+                "query": "sortBy"
+              }
+            },
+            {
+              "name": "sort-order",
+              "description": "The sort direction, and ASC when left out",
+              "valueName": "value",
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "ASC",
+                  "DESC"
+                ]
+              },
+              "sends": {
+                "query": "sortOrder"
+              }
+            },
+            {
+              "name": "search",
+              "description": "Text to find, in any case, in the record's description or category, its worker's first and last name, or its project's name. A worker missing either name is not matched by name",
+              "valueName": "value",
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "query": "search"
+              }
+            },
+            {
+              "name": "project-ids",
+              "description": "The IDs of the projects whose time records to list",
+              "valueName": "uuid",
+              "repeatable": true,
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "sends": {
+                "query": "projectIds"
+              }
+            },
+            {
+              "name": "without-project",
+              "description": "Whether to list time records with no project, alongside any projectIds",
+              "schema": {
+                "type": "boolean"
+              },
+              "sends": {
+                "query": "withoutProject"
+              }
+            },
+            {
+              "name": "start-date",
+              "description": "A day, and only time records done on or after it are listed",
+              "valueName": "value",
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "query": "startDate"
+              }
+            },
+            {
+              "name": "end-date",
+              "description": "A day, and only time records done on or before it are listed",
+              "valueName": "value",
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "query": "endDate"
+              }
+            },
+            {
+              "name": "worker-ids",
+              "description": "The IDs of the workers whose time records to list",
+              "valueName": "uuid",
+              "repeatable": true,
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "sends": {
+                "query": "workerIds"
+              }
+            },
+            {
+              "name": "categories",
+              "description": "The categories whose time records to list, matched exactly",
+              "valueName": "value",
+              "repeatable": true,
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "sends": {
+                "query": "categories"
+              }
+            },
+            {
+              "name": "json",
+              "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "examples": [
+            {
+              "description": "Get time records",
+              "command": "hardfin time-record list --limit 10"
+            }
+          ]
+        },
+        {
+          "name": "create",
+          "path": [
+            "time-record",
+            "create"
+          ],
+          "summary": "Create time record",
+          "description": "Create time record",
+          "runs": true,
+          "endpoint": {
+            "method": "POST",
+            "path": "/time-record"
+          },
+          "arguments": [],
+          "flags": [
+            {
+              "name": "category",
+              "description": "The kind of work, which cannot be empty and is at most 150 characters",
+              "valueName": "value",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "category"
+                ]
+              }
+            },
+            {
+              "name": "description",
+              "description": "What the work was, at most 2000 characters, or null for none",
+              "valueName": "value",
+              "clearable": true,
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "description"
+                ]
+              }
+            },
+            {
+              "name": "hourly-rate-value",
+              "description": "The rate the time is charged at. When it is null, a caller without time.rate view access gets the worker's default rate, and a caller with it gets no rate. A caller whose role does not grant `create` on `time.rate` is refused with a 403 when sending it: the exact value as a decimal string, which cannot be negative, sent with at most two decimal places, given with --hourly-rate-iso-code",
+              "valueName": "value",
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "hourlyRate",
+                  "amount"
+                ]
+              },
+              "together": [
+                "hourly-rate-iso-code"
+              ]
+            },
+            {
+              "name": "hourly-rate-iso-code",
+              "description": "The rate the time is charged at. When it is null, a caller without time.rate view access gets the worker's default rate, and a caller with it gets no rate. A caller whose role does not grant `create` on `time.rate` is refused with a 403 when sending it: the value's ISO 4217 currency code, given with --hourly-rate-value",
+              "valueName": "value",
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "CAD",
+                  "EUR",
+                  "GBP",
+                  "USD"
+                ]
+              },
+              "sends": {
+                "body": [
+                  "hourlyRate",
+                  "isoCode"
+                ]
+              },
+              "together": [
+                "hourly-rate-value"
+              ]
+            },
+            {
+              "name": "incurred-on",
+              "description": "The day the work was done",
+              "valueName": "value",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "incurredOn"
+                ]
+              }
+            },
+            {
+              "name": "project-id",
+              "description": "The ID of the project the work was for, or null for none",
+              "valueName": "uuid",
+              "clearable": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sends": {
+                "body": [
+                  "projectId"
+                ]
+              }
+            },
+            {
+              "name": "total-minutes",
+              "description": "How many minutes the worker spent, from 0 to 1440, and is 0 when left out",
+              "valueName": "number",
+              "schema": {
+                "type": "integer"
+              },
+              "sends": {
+                "body": [
+                  "totalMinutes"
+                ]
+              }
+            },
+            {
+              "name": "worker-id",
+              "description": "The ID of the person who did the work",
+              "valueName": "uuid",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sends": {
+                "body": [
+                  "workerId"
+                ]
+              }
+            },
+            {
+              "name": "unset",
+              "description": "A field to clear, named as its flag is, repeatable",
+              "valueName": "field",
+              "repeatable": true,
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "name": "input",
+              "description": "A file holding the JSON request body, or - for standard input. A flag given as well replaces its field",
+              "valueName": "path",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "json",
+              "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "examples": [
+            {
+              "description": "Create time record",
+              "command": "hardfin time-record create --category <value> --incurred-on <value> --worker-id <uuid>"
+            }
+          ]
+        },
+        {
+          "name": "get",
+          "path": [
+            "time-record",
+            "get"
+          ],
+          "summary": "Get time record",
+          "description": "Get time record",
+          "runs": true,
+          "endpoint": {
+            "method": "GET",
+            "path": "/time-record/{timeRecordKey}"
+          },
+          "arguments": [
+            {
+              "name": "timeRecordKey",
+              "description": "The time record's key",
+              "required": true
+            }
+          ],
+          "flags": [
+            {
+              "name": "json",
+              "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "examples": [
+            {
+              "description": "Get time record",
+              "command": "hardfin time-record get time_4kq8wz2mxv7pcr3t"
+            }
+          ]
+        },
+        {
+          "name": "update",
+          "path": [
+            "time-record",
+            "update"
+          ],
+          "summary": "Update time record",
+          "description": "Update time record",
+          "runs": true,
+          "endpoint": {
+            "method": "PATCH",
+            "path": "/time-record/{timeRecordKey}"
+          },
+          "arguments": [
+            {
+              "name": "timeRecordKey",
+              "description": "The time record's key",
+              "required": true
+            }
+          ],
+          "flags": [
+            {
+              "name": "category",
+              "description": "The kind of work, which cannot be empty or null and is at most 150 characters",
+              "valueName": "value",
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "category"
+                ]
+              }
+            },
+            {
+              "name": "description",
+              "description": "What the work was, at most 2000 characters, or null to clear it",
+              "valueName": "value",
+              "clearable": true,
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "description"
+                ]
+              }
+            },
+            {
+              "name": "clear-hourly-rate",
+              "description": "Send null for hourlyRate, which clears the rate the time is charged at",
+              "clears": true,
+              "schema": {
+                "type": "boolean"
+              },
+              "sends": {
+                "body": [
+                  "hourlyRate"
+                ]
+              }
+            },
+            {
+              "name": "hourly-rate-value",
+              "description": "The rate the time is charged at: the exact value as a decimal string, which cannot be negative, sent with at most two decimal places, given with --hourly-rate-iso-code",
+              "valueName": "value",
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "hourlyRate",
+                  "amount"
+                ]
+              },
+              "together": [
+                "hourly-rate-iso-code"
+              ]
+            },
+            {
+              "name": "hourly-rate-iso-code",
+              "description": "The rate the time is charged at: the value's ISO 4217 currency code, given with --hourly-rate-value",
+              "valueName": "value",
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "CAD",
+                  "EUR",
+                  "GBP",
+                  "USD"
+                ]
+              },
+              "sends": {
+                "body": [
+                  "hourlyRate",
+                  "isoCode"
+                ]
+              },
+              "together": [
+                "hourly-rate-value"
+              ]
+            },
+            {
+              "name": "incurred-on",
+              "description": "The day the work was done, which cannot be null",
+              "valueName": "value",
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "incurredOn"
+                ]
+              }
+            },
+            {
+              "name": "project-id",
+              "description": "The ID of the project the work was for, or null to detach it",
+              "valueName": "uuid",
+              "clearable": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sends": {
+                "body": [
+                  "projectId"
+                ]
+              }
+            },
+            {
+              "name": "total-minutes",
+              "description": "How many minutes the worker spent, from 0 to 1440, which cannot be null",
+              "valueName": "number",
+              "schema": {
+                "type": "integer"
+              },
+              "sends": {
+                "body": [
+                  "totalMinutes"
+                ]
+              }
+            },
+            {
+              "name": "worker-id",
+              "description": "The ID of the person who did the work, which cannot be null",
+              "valueName": "uuid",
+              "schema": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sends": {
+                "body": [
+                  "workerId"
+                ]
+              }
+            },
+            {
+              "name": "unset",
+              "description": "A field to clear, named as its flag is, repeatable",
+              "valueName": "field",
+              "repeatable": true,
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "name": "input",
+              "description": "A file holding the JSON request body, or - for standard input. A flag given as well replaces its field",
+              "valueName": "path",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "json",
+              "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "examples": [
+            {
+              "description": "Update time record",
+              "command": "hardfin time-record update time_4kq8wz2mxv7pcr3t"
+            }
+          ]
+        },
+        {
+          "name": "delete",
+          "path": [
+            "time-record",
+            "delete"
+          ],
+          "summary": "Delete time record",
+          "description": "Delete time record",
+          "runs": true,
+          "endpoint": {
+            "method": "DELETE",
+            "path": "/time-record/{timeRecordKey}"
+          },
+          "arguments": [
+            {
+              "name": "timeRecordKey",
+              "description": "The time record's key",
+              "required": true
+            }
+          ],
+          "flags": [
+            {
+              "name": "json",
+              "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "examples": [
+            {
+              "description": "Delete time record",
+              "command": "hardfin time-record delete time_4kq8wz2mxv7pcr3t"
             }
           ]
         }
@@ -19471,6 +22394,128 @@
           ]
         },
         {
+          "name": "create",
+          "path": [
+            "workflow",
+            "create"
+          ],
+          "summary": "Create workflow",
+          "description": "Create workflow",
+          "runs": true,
+          "endpoint": {
+            "method": "POST",
+            "path": "/workflow"
+          },
+          "arguments": [],
+          "flags": [
+            {
+              "name": "is-default",
+              "description": "isDefault",
+              "negatable": true,
+              "clearable": true,
+              "schema": {
+                "type": "boolean"
+              },
+              "sends": {
+                "body": [
+                  "isDefault"
+                ]
+              }
+            },
+            {
+              "name": "name",
+              "description": "name",
+              "valueName": "value",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "name"
+                ]
+              }
+            },
+            {
+              "name": "stage",
+              "description": "stages",
+              "valueName": "id=,migrateTo=,name=,orderIndex=,shouldDelete=",
+              "required": true,
+              "repeatable": true,
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "sends": {
+                "body": [
+                  "stages"
+                ]
+              },
+              "element": [
+                "id",
+                "migrateTo",
+                "name",
+                "orderIndex",
+                "shouldDelete"
+              ],
+              "elementTypes": {
+                "id": [
+                  "string",
+                  "null"
+                ],
+                "migrateTo": [
+                  "string",
+                  "null"
+                ],
+                "orderIndex": [
+                  "integer"
+                ],
+                "shouldDelete": [
+                  "boolean"
+                ]
+              },
+              "elementUuids": [
+                "id"
+              ]
+            },
+            {
+              "name": "unset",
+              "description": "A field to clear, named as its flag is, repeatable",
+              "valueName": "field",
+              "repeatable": true,
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "name": "input",
+              "description": "A file holding the JSON request body, or - for standard input. A flag given as well replaces its field",
+              "valueName": "path",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "json",
+              "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "examples": [
+            {
+              "description": "Create workflow",
+              "command": "hardfin workflow create --name <value> --stage id=<value>,migrateTo=<value>,name=<value>,orderIndex=<value>,shouldDelete=<value>"
+            }
+          ]
+        },
+        {
           "name": "get",
           "path": [
             "workflow",
@@ -19503,6 +22548,169 @@
             {
               "description": "Get workflow",
               "command": "hardfin workflow get wrkfl_6wqmaf1pp98jevep"
+            }
+          ]
+        },
+        {
+          "name": "update",
+          "path": [
+            "workflow",
+            "update"
+          ],
+          "summary": "Update workflow",
+          "description": "Update workflow",
+          "runs": true,
+          "endpoint": {
+            "method": "PUT",
+            "path": "/workflow/{workflowKey}"
+          },
+          "arguments": [
+            {
+              "name": "workflowKey",
+              "description": "The workflow's key",
+              "required": true
+            }
+          ],
+          "flags": [
+            {
+              "name": "is-default",
+              "description": "isDefault",
+              "negatable": true,
+              "clearable": true,
+              "schema": {
+                "type": "boolean"
+              },
+              "sends": {
+                "body": [
+                  "isDefault"
+                ]
+              }
+            },
+            {
+              "name": "name",
+              "description": "name",
+              "valueName": "value",
+              "clearable": true,
+              "schema": {
+                "type": "string"
+              },
+              "sends": {
+                "body": [
+                  "name"
+                ]
+              }
+            },
+            {
+              "name": "stage",
+              "description": "stages",
+              "valueName": "id=,migrateTo=,name=,orderIndex=,shouldDelete=",
+              "repeatable": true,
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "sends": {
+                "body": [
+                  "stages"
+                ]
+              },
+              "element": [
+                "id",
+                "migrateTo",
+                "name",
+                "orderIndex",
+                "shouldDelete"
+              ],
+              "elementTypes": {
+                "id": [
+                  "string",
+                  "null"
+                ],
+                "migrateTo": [
+                  "string",
+                  "null"
+                ],
+                "orderIndex": [
+                  "integer"
+                ],
+                "shouldDelete": [
+                  "boolean"
+                ]
+              },
+              "elementUuids": [
+                "id"
+              ]
+            },
+            {
+              "name": "unset",
+              "description": "A field to clear, named as its flag is, repeatable",
+              "valueName": "field",
+              "repeatable": true,
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "name": "input",
+              "description": "A file holding the JSON request body, or - for standard input. A flag given as well replaces its field",
+              "valueName": "path",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "json",
+              "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "examples": [
+            {
+              "description": "Update workflow",
+              "command": "hardfin workflow update wrkfl_6wqmaf1pp98jevep --stage id=<value>,migrateTo=<value>,name=<value>,orderIndex=<value>,shouldDelete=<value>"
+            }
+          ]
+        },
+        {
+          "name": "delete",
+          "path": [
+            "workflow",
+            "delete"
+          ],
+          "summary": "Delete workflow",
+          "description": "Delete workflow",
+          "runs": true,
+          "endpoint": {
+            "method": "DELETE",
+            "path": "/workflow/{workflowKey}"
+          },
+          "arguments": [
+            {
+              "name": "workflowKey",
+              "description": "The workflow's key",
+              "required": true
+            }
+          ],
+          "flags": [
+            {
+              "name": "json",
+              "description": "Print machine-readable output, which is the default when stdout is not a terminal",
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "examples": [
+            {
+              "description": "Delete workflow",
+              "command": "hardfin workflow delete wrkfl_6wqmaf1pp98jevep"
             }
           ]
         }
@@ -19654,7 +22862,7 @@
         "types"
       ],
       "summary": "Print TypeScript types for the Hardfin API",
-      "description": "Writes a declaration for every record the API sends and takes, for API version 2026-10-24, which is the version this CLI calls. Regenerate them after upgrading the CLI.",
+      "description": "Writes a declaration for every record the API sends and takes, for API version 2026-11-24.R2, which is the version this CLI calls. Regenerate them after upgrading the CLI.",
       "runs": true,
       "endpoint": null,
       "arguments": [],
