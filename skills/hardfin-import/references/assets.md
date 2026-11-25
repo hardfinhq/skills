@@ -45,5 +45,5 @@ Read `hardfin-cli`'s `references/assets.md` for the asset data model.
 
 ## Before the full load
 
-Load one asset, read it back with `get` or `assetGetAsset` on the connector's `hardfin_read` with `params.assetKey`,
+Load one asset, read it back with `get` or the connector's `get_asset` with `assetKey`,
 and compare every field sent, including cost, currency and dates, with what came back.

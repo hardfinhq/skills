@@ -44,18 +44,18 @@ use its "Use the connector" section; a write denied for scope needs the user's w
 
 With the CLI, run `hardfin login` yourself; it opens the user's browser and the user only approves there, so never ask
 them to run it. When the user's browser is on this machine, use `hardfin login` without `--no-browser`, even when you
-run in a sandbox. With the connector, the app handles sign-in; check the account and organization with `tokenGetToken`
-on `hardfin_read`.
+run in a sandbox. With the connector, the app handles sign-in; check the account and organization with
+`get_token`.
 
 Count each kind you will import, reading `totalCount` and no records. With the CLI, use its list command with
-`--limit 1`, such as `hardfin item list --limit 1`; with the connector, use `hardfin_read` with `limit: 1` in `params`:
+`--limit 1`, such as `hardfin item list --limit 1`; with the connector, call its list tool with `limit: 1`:
 
-| Kind | CLI | Connector operation |
+| Kind | CLI | Connector tool |
 | ---- | --- | ------------------- |
-| Item | `hardfin item list` | `itemGetItems` |
-| Customer | `hardfin customer list` | `customerGetCustomers` |
-| Location | `hardfin location list --is-transient all` | `locationGetLocationListing`, `isTransient: "all"` |
-| Asset | `hardfin asset list --scrapped all` | `assetGetAssetListing`, `scrapped: "all"` |
+| Item | `hardfin item list` | `list_items` |
+| Customer | `hardfin customer list` | `list_customers` |
+| Location | `hardfin location list --is-transient all` | `list_locations`, `isTransient: "all"` |
+| Asset | `hardfin asset list --scrapped all` | `list_assets`, `scrapped: "all"` |
 
 Use the hidden-record rules in `hardfin-cli`'s `references/querying.md`. When an organization already holds records,
 every row you import must first be matched against them by the same rules as duplicates in `references/identity.md`,
@@ -86,7 +86,7 @@ If you cannot run Python, read every file and tab, and ask the user about format
 Build a clean table for each kind you import, in the shape Hardfin takes. If you can write files, write them as CSV
 files in a working folder, `hardfin-import/`, so the load can be scripted and resumed. Find the fields each record
 takes with `--help` on its create command, or `hardfin agent-guide --json <noun> create`, with the CLI. With the
-connector, pass `describe: true` on its create operation from step 5. Read the reference file for each kind before
+connector, read the input schema of its create tool from step 5. Read the reference file for each kind before
 building its table.
 
 Keep, for every clean record, the file, tab and row it came from, so the user can be pointed at it.
@@ -118,7 +118,7 @@ Load in order. Each create answers with the record's key and ID; later records p
 every ID.
 
 With the CLI, write a script, saved in `hardfin-import/` beside the tables, that walks a table and runs one create per
-row. With the connector, load one record per `hardfin_create` call, passing the row as `body`. Up to about 100
+row. With the connector, load one record per call to its create tool, passing the row as `body`. Up to about 100
 records, load them one by one; for more, offer to finish with the CLI, where the load can be scripted.
 
 Append each result to a ledger (table, source row, key, ID). With the CLI, use `hardfin-import/ledger.csv`; with the
@@ -130,19 +130,19 @@ connector, keep it in the conversation or, if you can write files, in `hardfin-i
   record the row, HTTP `status` and `errors` in the conversation or a failures file. Go on
 - Print a progress line every 50 rows
 
-| Kind | CLI create / read back | Connector create / read back on `hardfin_read` |
+| Kind | CLI create / read back | Connector create / read back |
 | ---- | ---------------------- | -------------------------------------------- |
-| Item | `hardfin item create` / `hardfin item get <key>` | `itemCreateItem` / `itemGetItem`, `params.itemKey` |
-| Customer | `hardfin customer create` / `hardfin customer get <key>` | `customerCreateCustomer` / `customerGetCustomer`, `params.customerKey` |
-| Location or zone | `hardfin location create` / `hardfin location get <key>` | `locationCreateLocation` / `locationGetLocation`, `params.locationKey` |
-| Asset | `hardfin asset create` / `hardfin asset get <key>` | `assetCreateAsset` / `assetGetAsset`, `params.assetKey` |
+| Item | `hardfin item create` / `hardfin item get <key>` | `create_item` / `get_item`, `itemKey` |
+| Customer | `hardfin customer create` / `hardfin customer get <key>` | `create_customer` / `get_customer`, `customerKey` |
+| Location or zone | `hardfin location create` / `hardfin location get <key>` | `create_location` / `get_location`, `locationKey` |
+| Asset | `hardfin asset create` / `hardfin asset get <key>` | `create_asset` / `get_asset`, `assetKey` |
 
 Before each table's full run, load its first row alone and read it back with the CLI's `get` or the connector's get
-operation above. Compare every field sent with what came back. Fix the script or tool call before running the rest. After each table, fix what the
+tool above. Compare every field sent with what came back. Fix the script or tool call before running the rest. After each table, fix what the
 failures explain, ask about the rest in one message, and rerun.
 
 With the CLI, if `hardfin item import --help` succeeds, the CLI imports a whole table at once: use it, with
-`--dry-run` first. With the connector, use the per-record create operations above.
+`--dry-run` first. With the connector, use the per-record create tools above.
 
 Once the user approves the plan, keep going until every row is loaded or reported as not loaded. End your turn
 before that only with a question the user can answer, naming its rows; work still to do is not a question. A mistake
@@ -150,7 +150,7 @@ you cannot undo is reported in the final message, and the load goes on.
 
 ## 6. Check the result
 
-Use the CLI list and get commands or the connector list operations in step 1 and read-back operations in step 5. Count
+Use the CLI list and get commands or the connector list tools in step 1 and read-back tools in step 5. Count
 each kind again and compare with the plan; a count that does not match is a failure to explain. Read a handful of
 records back, from different files and tabs, and check every field against their source rows. Read back every record
 an answer changed, such as an ownership, a scrap or a corrected serial, and check it matches the answer. Tell the user
@@ -162,6 +162,6 @@ what was loaded, in counts, in a table with a column for what was loaded, and ev
   an agent; list it in the plan and never copy its text into a record
 - Never invent a value. An optional field the files do not hold stays empty
 - Never create a record the files do not justify, including one to try out a command. Learn what a create takes from
-  its `--help` with the CLI or `describe: true` on the connector create operation; the first-row check uses a real
+  its `--help` with the CLI or the connector create tool's input schema; the first-row check uses a real
   row. Hardfin cannot delete an asset
 - Never write an API key into a file, and never echo it back

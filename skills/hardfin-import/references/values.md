@@ -20,7 +20,7 @@
 - Normalize amounts to plain decimals as text, such as `1240.50`. Strip `$`, `USD`, thousands separators and spaces
 - A cost with no currency is in the organization's currency only when nothing suggests otherwise;
   see `hardfin-cli`'s `references/assets.md`. Read that currency as `defaultCurrency` from
-  `hardfin organization get --json`, or from `organizationGetOrganization` on `hardfin_read` with the connector
+  `hardfin organization get --json`, or from `get_organization` with the connector
 - Compare each cost with the same product's other costs. A cost far out of line, with nothing on the row to explain
   it, may be in another currency, a total for several units, a depreciated value or a typo: ask, naming the rows and
   the readings, and propose the one the row supports
@@ -44,8 +44,8 @@
 
 ## Statuses
 
-- Map the company's words to the statuses `asset create --help` lists, or describe `assetCreateAsset` on
-  `hardfin_create` with the connector. Words that clearly mean working map to working and words that clearly mean
+- Map the company's words to the statuses `asset create --help` lists, or read the input schema of
+  `create_asset` with the connector. Words that clearly mean working map to working and words that clearly mean
   not working map to not working, as a judgment call
 - A word that could map to more than one Hardfin status, such as "awaiting parts", "at vendor" or "on hold", is a question:
   propose a mapping for every such word in one list
