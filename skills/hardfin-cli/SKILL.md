@@ -172,6 +172,16 @@ echo '{"name": "Dock 4, north side", "type": "ZONE", "parentLocationId": "<site 
 hardfin asset accounting update ast_4f9xk2mq7plr8stz --unset useful-life
 ```
 
+Clear an object, such as an amount of money or an address, with its `--clear-<field>` flag.
+A create has no clear flag, so leave the object out of it.
+Never give the object the word null, as in `--salvage-value null`. That is sent as the text
+"null", and the API refuses it with `bad_request`. A field that holds one value, such as
+`--useful-life`, is cleared with the word `null` or by naming its flag to `--unset`.
+
+```sh
+hardfin asset accounting update ast_4f9xk2mq7plr8stz --clear-salvage-value
+```
+
 `--help` on a command that takes `--input` lays out its whole JSON body, nested objects such
 as `address` included. Read it rather than guessing field names. A flag given with `--input`
 replaces that field of the body. A value with a comma in it
